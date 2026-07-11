@@ -1,9 +1,7 @@
-package it.unicam.cs.mpgc.rpg125944.model.characters; 
+package it.unicam.cs.mpgc.rpg125944.model.characters;
 
-/**
- * Interfaccia base per il Decorator Pattern.
- * Rappresenta l'astrazione di un personaggio nell'Auto-Battler.
- */
+import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
+
 public interface Character {
     String getName();
     int getHp();
@@ -11,9 +9,9 @@ public interface Character {
     int getAttackPower();
     int getDefense();
     
-    // Metodo per subire danni (sarà utile per la logica di combattimento)
     void takeDamage(int damage);
-    
-    // Metodo per sapere se il personaggio è ancora in vita
     boolean isAlive();
+    
+    // Questo è il metodo che mancava per far compilare tutto!
+    CombatAction getCombatAction();
 }

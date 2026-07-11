@@ -1,4 +1,6 @@
-package it.unicam.cs.mpgc.rpg125944.model.characters; 
+package it.unicam.cs.mpgc.rpg125944.model.characters;
+
+import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
 
 /**
  * Classe astratta base per il Decorator Pattern.
@@ -46,5 +48,10 @@ public abstract class CharacterDecorator implements Character {
     @Override
     public boolean isAlive() {
         return character.isAlive();
+    }
+
+    @Override
+    public CombatAction getCombatAction() {
+        return character.getCombatAction();
     }
 }

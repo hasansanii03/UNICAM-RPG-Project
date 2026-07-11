@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.characters;
 
+import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
+
 public class BaseHero implements Character {
     
     private String name;
@@ -7,8 +9,17 @@ public class BaseHero implements Character {
     private int maxHp;
     private int baseAttack;
     private int baseDefense;
+    private CombatAction combatAction; // NUOVO CAMPO
 
-    public BaseHero(String name, int maxHp, int baseAttack, int baseDefense) {
+    public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
+        this.name = name;
+        this.maxHp = maxHp;
+        this.hp = maxHp; // Inizia con gli HP al massimo
+        this.baseAttack = baseAttack;
+        this.baseDefense = baseDefense;
+        this.combatAction = combatAction; // Inizializza l'azione di combattimento
+    }
+     {
         this.name = name;
         this.maxHp = maxHp;
         this.hp = maxHp; // Inizia con gli HP al massimo
@@ -55,5 +66,10 @@ public class BaseHero implements Character {
     @Override
     public boolean isAlive() {
         return this.hp > 0;
+    }
+
+    @Override
+    public CombatAction getCombatAction() {
+        return combatAction;
     }
 }

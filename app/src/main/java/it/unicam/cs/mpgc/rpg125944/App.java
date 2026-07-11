@@ -1,38 +1,29 @@
-package it.unicam.cs.mpgc.rpg125944; 
+package it.unicam.cs.mpgc.rpg125944;
+
 import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Weapon;
+import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 
 public class App {
     public static void main(String[] args) {
         System.out.println("--- Test Iniziale Auto-Battler ---");
 
-        // 1. Creiamo un eroe "nudo"
-        Character hero = new BaseHero("Arthur", 100, 10, 5);
+        // Abbiamo aggiunto "new BasicAttack()" al costruttore!
+        Character hero = new BaseHero("Arthur", 100, 10, 5, new BasicAttack());
         
-        System.out.println("Personaggio creato:");
-        System.out.println("Nome: " + hero.getName());
-        System.out.println("Attacco: " + hero.getAttackPower());
-        System.out.println("Difesa: " + hero.getDefense());
+        System.out.println("Personaggio creato: " + hero.getName());
         
-        System.out.println("\n-----------------------------------\n");
-
-        // 2. Equipaggiamo l'eroe usando il Decorator!
-        // Notare come riassegniamo la variabile hero. Il Decorator "avvolge" l'oggetto originale.
+        // Equipaggiamo l'eroe
         hero = new Weapon(hero, "Spada Lunga", 15);
+        System.out.println("Arma equipaggiata! Nuovo Nome: " + hero.getName());
+        System.out.println("Nuovo Attacco: " + hero.getAttackPower());
         
-        System.out.println("Equipaggiamento aggiunto!");
-        System.out.println("Nuovo Nome: " + hero.getName());
-        System.out.println("Nuovo Attacco: " + hero.getAttackPower()); // Dovrebbe essere 10 (base) + 15 (spada) = 25
-        System.out.println("Difesa invariata: " + hero.getDefense()); // Rimane 5
+        // Proviamo a usare lo Strategy Pattern per attaccare un finto nemico
+        Character goblin = new BaseHero("Goblin", 30, 5, 2, new BasicAttack());
         
-        System.out.println("\n-----------------------------------\n");
-
-        // 3. Testiamo il sistema di danni
-        System.out.println("Arthur subisce un attacco da 20 danni!");
-        hero.takeDamage(20);
-        // Il danno dovrebbe essere 20 - 5 (difesa) = 15. HP finali = 100 - 15 = 85.
-        
-        System.out.println("\nStato finale: Vivo? " + hero.isAlive());
+        System.out.println("\n--- Inizio Combattimento ---");
+        // L'eroe usa la sua azione di combattimento contro il goblin
+        hero.getCombatAction().execute(hero, goblin);
     }
 }
