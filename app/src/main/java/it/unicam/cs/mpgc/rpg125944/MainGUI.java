@@ -3,6 +3,8 @@ package it.unicam.cs.mpgc.rpg125944;
 import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
+import it.unicam.cs.mpgc.rpg125944.model.persistence.HeroDAO;
+import it.unicam.cs.mpgc.rpg125944.model.persistence.JsonHeroDAO;
 import it.unicam.cs.mpgc.rpg125944.util.Observer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -11,13 +13,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class MainGUI extends Application implements Observer {
 
-    private BaseHero hero;
+    private BaseHero hero; // L'eroe base (che può essere osservato)
+    private Character currentHeroInterface; // Il riferimento generico per il salvataggio
     private Character goblin;
+    
+    // Strumento di persistenza (DAO)
+    private final HeroDAO heroDAO = new JsonHeroDAO();
     
     // Elementi grafici
     private Label hpLabel;
@@ -25,47 +32,76 @@ public class MainGUI extends Application implements Observer {
 
     @Override
     public void start(Stage primaryStage) {
-        // 1. Inizializzazione del Modello (Model)
-        hero = new BaseHero("Arthur", 100, 15, 5, new BasicAttack());
+        // 1. Inizializzazione del Modello
+        setupNewHero();
         goblin = new BaseHero("Goblin Brutto", 30, 10, 2, new BasicAttack());
         
-        // 2. Iscrizione al pattern Observer (La GUI osserva l'Eroe)
-        hero.addObserver(this);
+        // 2. Creazione Elementi Grafici
+        Label titleLabel = new Label("🔥 UNICAM RPG: Arena 🔥");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        
+        hpLabel = new Label(); 
+        hpBar = new ProgressBar(1.0); 
+        hpBar.setPrefWidth(250);
 
-        // 3. Creazione Elementi Grafici (View)
-        Label nameLabel = new Label("Eroe: " + hero.getName());
-        hpLabel = new Label(); // Verrà aggiornata da update()
-        hpBar = new ProgressBar(1.0); // 1.0 significa 100%
-        hpBar.setPrefWidth(200);
-
-        // Bottone che simula un turno di gioco
-        Button attackButton = new Button("Goblin attacca Arthur (Simulazione Turno)");
+        // Bottoni Azione
+        Button attackButton = new Button("⚔️ Il Goblin ti Attacca!");
+        attackButton.setStyle("-fx-base: #ffcccc;");
         attackButton.setOnAction(e -> {
-            // Il bottone chiama il model per eseguire l'azione
             goblin.getCombatAction().execute(goblin, hero);
         });
+        
+        // Bottoni Salvataggio
+        Button saveButton = new Button("💾 Salva Partita");
+        saveButton.setOnAction(e -> {
+            // Salviamo usando il riferimento astratto
+            heroDAO.saveHero(currentHeroInterface); 
+            System.out.println("Salvataggio completato dal pulsante GUI.");
+        });
+        
+        Button loadButton = new Button("📂 Carica Partita");
+        loadButton.setOnAction(e -> {
+            Character loaded = heroDAO.loadHero();
+            if (loaded != null && loaded instanceof BaseHero) {
+                // Sostituiamo il vecchio eroe con quello caricato
+                this.hero = (BaseHero) loaded;
+                this.currentHeroInterface = this.hero;
+                // Dobbiamo ricollegare la GUI (che è l'Observer) al nuovo eroe
+                this.hero.addObserver(this);
+                update(); // Aggiorniamo subito la grafica
+                System.out.println("Partita caricata dalla GUI.");
+            } else {
+                System.out.println("Nessun salvataggio trovato.");
+            }
+        });
 
-        // Layout verticale
-        VBox layout = new VBox(15);
+        // Layout
+        HBox saveLoadBox = new HBox(10, saveButton, loadButton);
+        saveLoadBox.setAlignment(Pos.CENTER);
+
+        VBox layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
-        layout.getChildren().addAll(nameLabel, hpBar, hpLabel, attackButton);
+        layout.getChildren().addAll(titleLabel, hpBar, hpLabel, attackButton, saveLoadBox);
 
-        // Aggiornamento iniziale della grafica
-        update();
+        update(); // Aggiornamento iniziale
 
-        Scene scene = new Scene(layout, 400, 300);
+        Scene scene = new Scene(layout, 400, 350);
         primaryStage.setTitle("UNICAM Auto-Battler");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    // Questo metodo viene chiamato in automatico da notifyObservers() quando l'eroe perde HP
+    // Metodo di supporto per creare un eroe pulito
+    private void setupNewHero() {
+        hero = new BaseHero("Arthur", 100, 15, 5, new BasicAttack());
+        currentHeroInterface = hero; // Per il salvataggio
+        hero.addObserver(this); // La GUI osserva l'Eroe
+    }
+
     @Override
     public void update() {
-        // Platform.runLater assicura che le modifiche grafiche avvengano nel thread corretto di JavaFX
         Platform.runLater(() -> {
-            hpLabel.setText("HP: " + hero.getHp() + " / " + hero.getMaxHp());
-            // Calcola la percentuale di vita per la barra (da 0.0 a 1.0)
+            hpLabel.setText(hero.getName() + " - HP: " + hero.getHp() + " / " + hero.getMaxHp());
             double hpPercentage = (double) hero.getHp() / hero.getMaxHp();
             hpBar.setProgress(hpPercentage);
         });

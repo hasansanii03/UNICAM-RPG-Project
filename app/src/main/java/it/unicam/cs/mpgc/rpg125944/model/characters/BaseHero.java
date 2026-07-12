@@ -86,4 +86,10 @@ public class BaseHero implements Character {
     public CombatAction getCombatAction() {
         return combatAction;
     }
+    // Usato SOLO dal sistema di persistenza per ripristinare gli HP senza passare da takeDamage
+public void setHpForLoading(int loadedHp) {
+    if(loadedHp >= 0 && loadedHp <= this.maxHp) {
+        this.hp = loadedHp;
+    }
+}
 }
