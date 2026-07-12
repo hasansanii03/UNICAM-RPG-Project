@@ -1,6 +1,9 @@
 package it.unicam.cs.mpgc.rpg125944.model.characters;
 
 import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
+import it.unicam.cs.mpgc.rpg125944.util.Observer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BaseHero implements Character {
     
@@ -9,7 +12,10 @@ public class BaseHero implements Character {
     private int maxHp;
     private int baseAttack;
     private int baseDefense;
-    private CombatAction combatAction; // NUOVO CAMPO
+    private CombatAction combatAction; 
+    
+    // CORRETTO: Aggiunto <Observer>
+    private List<Observer> observers = new ArrayList<>();
 
     public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
         this.name = name;
@@ -17,14 +23,19 @@ public class BaseHero implements Character {
         this.hp = maxHp; // Inizia con gli HP al massimo
         this.baseAttack = baseAttack;
         this.baseDefense = baseDefense;
-        this.combatAction = combatAction; // Inizializza l'azione di combattimento
+        this.combatAction = combatAction; 
     }
-     {
-        this.name = name;
-        this.maxHp = maxHp;
-        this.hp = maxHp; // Inizia con gli HP al massimo
-        this.baseAttack = baseAttack;
-        this.baseDefense = baseDefense;
+
+    // CORRETTO: Rimosso il blocco duplicato di inizializzazione che c'era qui
+
+    public void addObserver(Observer observer) {
+        this.observers.add(observer);
+    }
+
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 
     @Override
@@ -61,6 +72,9 @@ public class BaseHero implements Character {
             this.hp = 0;
         }
         System.out.println(this.name + " subisce " + actualDamage + " danni. HP rimanenti: " + this.hp);
+        
+        // CORRETTO: Avvisa l'interfaccia grafica che gli HP sono cambiati!
+        notifyObservers();
     }
 
     @Override
