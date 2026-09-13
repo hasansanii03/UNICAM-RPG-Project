@@ -5,8 +5,8 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import java.util.Objects;
 
 /**
- * Controls one battle round at a time. A round contains the selected player
- * action and, if the enemy survives, its automatic response.
+ * Gestisce uno scontro un turno alla volta. Un turno contiene l'azione scelta
+ * dal giocatore e, se il nemico sopravvive, la sua risposta automatica.
  */
 public class Battle {
     public static final int POTION_HEALING = 20;
@@ -22,13 +22,13 @@ public class Battle {
     }
 
     public Battle(Character hero, Character enemy, int availablePotions, int turnNumber) {
-        this.hero = Objects.requireNonNull(hero, "hero must not be null");
-        this.enemy = Objects.requireNonNull(enemy, "enemy must not be null");
+        this.hero = Objects.requireNonNull(hero, "l'eroe non puo' essere null");
+        this.enemy = Objects.requireNonNull(enemy, "il nemico non puo' essere null");
         if (availablePotions < 0) {
-            throw new IllegalArgumentException("availablePotions must not be negative");
+            throw new IllegalArgumentException("le pozioni disponibili non possono essere negative");
         }
         if (turnNumber <= 0) {
-            throw new IllegalArgumentException("turnNumber must be positive");
+            throw new IllegalArgumentException("il numero del turno deve essere positivo");
         }
         this.remainingPotions = availablePotions;
         this.turnNumber = turnNumber;
@@ -36,9 +36,9 @@ public class Battle {
     }
 
     public TurnResult executeTurn(PlayerAction playerAction) {
-        Objects.requireNonNull(playerAction, "playerAction must not be null");
+        Objects.requireNonNull(playerAction, "playerAction non puo' essere null");
         if (state != BattleState.IN_PROGRESS) {
-            throw new IllegalStateException("battle has already ended");
+            throw new IllegalStateException("lo scontro e' gia' terminato");
         }
 
         ActionResult playerActionResult = null;
@@ -49,10 +49,10 @@ public class Battle {
             playerActionResult = hero.getCombatAction().execute(hero, enemy);
         } else if (playerAction == PlayerAction.USE_POTION) {
             if (remainingPotions == 0) {
-                throw new IllegalStateException("no potions remaining");
+                throw new IllegalStateException("non restano pozioni");
             }
             if (hero.getHp() == hero.getMaxHp()) {
-                throw new IllegalStateException("hero already has full health");
+                throw new IllegalStateException("l'eroe ha gia' tutti gli HP");
             }
             remainingPotions--;
             hpRestored = hero.heal(POTION_HEALING);

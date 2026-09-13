@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
-/** Signals an error while reading or writing persistent game data. */
+/** Segnala un errore durante la lettura o la scrittura dei dati di gioco persistenti. */
 public class PersistenceException extends RuntimeException {
     public PersistenceException(String message, Throwable cause) {
         super(message, cause);

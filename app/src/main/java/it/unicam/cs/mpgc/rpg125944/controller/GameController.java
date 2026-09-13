@@ -9,7 +9,7 @@ import it.unicam.cs.mpgc.rpg125944.model.persistence.GameRepository;
 
 import java.util.Objects;
 
-/** Application boundary used by user interfaces to control a game session. */
+/** Punto di accesso applicativo usato dalle interfacce per controllare una partita. */
 public class GameController {
     private final EnemyProvider enemyProvider;
     private final int totalWaves;
@@ -23,10 +23,10 @@ public class GameController {
             int availablePotions,
             GameRepository gameRepository
     ) {
-        this.enemyProvider = Objects.requireNonNull(enemyProvider, "enemyProvider must not be null");
+        this.enemyProvider = Objects.requireNonNull(enemyProvider, "enemyProvider non puo' essere null");
         this.totalWaves = totalWaves;
         this.availablePotions = availablePotions;
-        this.gameRepository = Objects.requireNonNull(gameRepository, "gameRepository must not be null");
+        this.gameRepository = Objects.requireNonNull(gameRepository, "gameRepository non puo' essere null");
     }
 
     public void startNewGame(Character hero) {
@@ -47,12 +47,12 @@ public class GameController {
 
     public void loadGame() {
         session = gameRepository.load(enemyProvider)
-                .orElseThrow(() -> new IllegalStateException("no saved game is available"));
+                .orElseThrow(() -> new IllegalStateException("nessuna partita salvata disponibile"));
     }
 
     public GameSession getSession() {
         if (session == null) {
-            throw new IllegalStateException("start a new game first");
+            throw new IllegalStateException("avvia prima una nuova partita");
         }
         return session;
     }

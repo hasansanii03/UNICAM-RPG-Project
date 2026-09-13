@@ -9,7 +9,7 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 public interface CombatAction {
     
     /**
-     * Executes the action and returns its outcome.
+     * Esegue l'azione e restituisce il suo esito.
      * @param attacker Il personaggio che esegue l'attacco.
      * @param target Il bersaglio dell'attacco.
      */

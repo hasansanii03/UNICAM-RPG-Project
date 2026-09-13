@@ -1,4 +1,4 @@
-name: Build
+name: Compilazione
 
 on:
   push:
@@ -11,15 +11,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Scarica il codice sorgente
         uses: actions/checkout@v7
-      - name: Set up Java 21
+      - name: Configura Java 21
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
           cache: gradle
-      - name: Validate Gradle Wrapper
+      - name: Verifica Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v6
-      - name: Build and test
+      - name: Compila ed esegui i test
         run: ./gradlew build

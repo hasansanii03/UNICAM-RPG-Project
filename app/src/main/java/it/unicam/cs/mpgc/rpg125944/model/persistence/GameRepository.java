@@ -5,7 +5,7 @@ import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 
 import java.util.Optional;
 
-/** Persists complete game sessions independently of the storage technology. */
+/** Salva partite complete indipendentemente dalla tecnologia di memorizzazione. */
 public interface GameRepository {
     void save(GameSession session);
 

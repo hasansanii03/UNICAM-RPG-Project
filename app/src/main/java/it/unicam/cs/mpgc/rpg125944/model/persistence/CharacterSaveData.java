@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
-/** Raw serializable representation of a combatant. */
+/** Rappresentazione grezza serializzabile di un combattente. */
 public class CharacterSaveData {
     public String name;
     public int hp;

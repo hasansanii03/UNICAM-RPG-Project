@@ -20,7 +20,7 @@ public class EnemyFactory implements EnemyProvider {
     }
 
     public EnemyFactory(RandomGenerator random) {
-        this.random = Objects.requireNonNull(random, "random must not be null");
+        this.random = Objects.requireNonNull(random, "random non puo' essere null");
     }
 
     /**
@@ -35,7 +35,7 @@ public class EnemyFactory implements EnemyProvider {
     @Override
     public Character createEnemy(int difficultyLevel) {
         if (difficultyLevel <= 0) {
-            throw new IllegalArgumentException("difficultyLevel must be positive");
+            throw new IllegalArgumentException("il livello di difficolta deve essere positivo");
         }
         int enemyType = random.nextInt(3); // Genera un numero da 0 a 2
 

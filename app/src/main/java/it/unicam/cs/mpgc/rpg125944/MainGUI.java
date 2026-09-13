@@ -26,7 +26,7 @@ import javafx.stage.Stage;
 
 import java.nio.file.Path;
 
-/** JavaFX view that delegates all game commands to GameController. */
+/** Vista JavaFX che delega tutti i comandi di gioco a GameController. */
 public class MainGUI extends Application {
     private static final int TOTAL_WAVES = 3;
     private static final int INITIAL_POTIONS = 2;
@@ -45,16 +45,16 @@ public class MainGUI extends Application {
     private final ProgressBar heroHpBar = new ProgressBar();
     private final ProgressBar enemyHpBar = new ProgressBar();
     private final TextArea battleLog = new TextArea();
-    private final Button attackButton = new Button("Attack");
-    private final Button defendButton = new Button("Defend");
-    private final Button potionButton = new Button("Use potion");
-    private final Button nextWaveButton = new Button("Next wave");
+    private final Button attackButton = new Button("Attacca");
+    private final Button defendButton = new Button("Difenditi");
+    private final Button potionButton = new Button("Usa pozione");
+    private final Button nextWaveButton = new Button("Prossima ondata");
 
     @Override
     public void start(Stage stage) {
-        Button newGameButton = new Button("New game");
-        Button saveButton = new Button("Save game");
-        Button loadButton = new Button("Load game");
+        Button newGameButton = new Button("Nuova partita");
+        Button saveButton = new Button("Salva partita");
+        Button loadButton = new Button("Carica partita");
         newGameButton.setOnAction(event -> startNewGame());
         saveButton.setOnAction(event -> saveGame());
         loadButton.setOnAction(event -> loadGame());
@@ -69,8 +69,8 @@ public class MainGUI extends Application {
         battleLog.setWrapText(true);
         battleLog.setPrefRowCount(8);
 
-        VBox heroBox = new VBox(6, new Label("Hero"), heroLabel, heroHpBar);
-        VBox enemyBox = new VBox(6, new Label("Enemy"), enemyLabel, enemyHpBar);
+        VBox heroBox = new VBox(6, new Label("Eroe"), heroLabel, heroHpBar);
+        VBox enemyBox = new VBox(6, new Label("Nemico"), enemyLabel, enemyHpBar);
         HBox combatants = new HBox(40, heroBox, enemyBox);
         combatants.setAlignment(Pos.CENTER);
 
@@ -84,7 +84,7 @@ public class MainGUI extends Application {
                 stateLabel,
                 combatants,
                 actions,
-                new Label("Battle log"),
+                new Label("Registro dello scontro"),
                 battleLog,
                 persistenceActions,
                 newGameButton
@@ -100,7 +100,7 @@ public class MainGUI extends Application {
 
     private void startNewGame() {
         controller.startNewGame(createHero());
-        battleLog.setText("A new game has started. Choose an action.");
+        battleLog.setText("Nuova partita iniziata. Scegli un'azione.");
         refresh();
     }
 
@@ -114,56 +114,56 @@ public class MainGUI extends Application {
             appendTurn(result);
             refresh();
         } catch (IllegalStateException exception) {
-            battleLog.appendText("\nAction unavailable: " + exception.getMessage());
+            battleLog.appendText("\nAzione non disponibile: " + exception.getMessage());
         }
     }
 
     private void startNextWave() {
         try {
             controller.startNextWave();
-            battleLog.appendText("\nWave " + controller.getSession().getCurrentWave() + " has started.");
+            battleLog.appendText("\nIniziata l'ondata " + controller.getSession().getCurrentWave() + ".");
             refresh();
         } catch (IllegalStateException exception) {
-            battleLog.appendText("\nNext wave unavailable: " + exception.getMessage());
+            battleLog.appendText("\nProssima ondata non disponibile: " + exception.getMessage());
         }
     }
 
     private void saveGame() {
         try {
             controller.saveGame();
-            battleLog.appendText("\nGame saved.");
+            battleLog.appendText("\nPartita salvata.");
         } catch (PersistenceException exception) {
-            battleLog.appendText("\nSave failed: " + exception.getMessage());
+            battleLog.appendText("\nSalvataggio fallito: " + exception.getMessage());
         }
     }
 
     private void loadGame() {
         try {
             controller.loadGame();
-            battleLog.setText("Saved game loaded.");
+            battleLog.setText("Partita salvata caricata.");
             refresh();
         } catch (PersistenceException | IllegalStateException exception) {
-            battleLog.appendText("\nLoad failed: " + exception.getMessage());
+            battleLog.appendText("\nCaricamento fallito: " + exception.getMessage());
         }
     }
 
     private void appendTurn(TurnResult result) {
         GameSession session = controller.getSession();
-        battleLog.appendText("\nTurn " + result.turnNumber() + ": ");
+        battleLog.appendText("\nTurno " + result.turnNumber() + ": ");
         switch (result.playerAction()) {
             case ATTACK -> appendAction(session.getHero().getName(), result.playerActionResult());
-            case DEFEND -> battleLog.appendText(session.getHero().getName() + " defends.");
+            case DEFEND -> battleLog.appendText(session.getHero().getName() + " si difende.");
             case USE_POTION -> battleLog.appendText(session.getHero().getName()
-                    + " restores " + result.hpRestored() + " HP.");
+                    + " recupera " + result.hpRestored() + " HP.");
         }
         if (result.enemyActionResult() != null) {
             battleLog.appendText(" " + session.getCurrentBattle().getEnemy().getName() + " ");
             appendActionResult(result.enemyActionResult());
         }
         if (result.battleState().name().endsWith("WON")) {
-            battleLog.appendText(" The enemy was defeated.");
+            battleLog.appendText(" Il nemico e' stato sconfitto.");
         } else if (result.battleState().name().endsWith("LOST")) {
-            battleLog.appendText(" The hero was defeated.");
+            battleLog.appendText(" L'eroe e' stato sconfitto.");
         }
     }
 
@@ -173,9 +173,9 @@ public class MainGUI extends Application {
     }
 
     private void appendActionResult(ActionResult result) {
-        battleLog.appendText("deals " + result.damageDealt() + " damage");
+        battleLog.appendText("infligge " + result.damageDealt() + " danni");
         if (result.critical()) {
-            battleLog.appendText(" with a critical hit");
+            battleLog.appendText(" con un colpo critico");
         }
         battleLog.appendText(".");
     }
@@ -184,9 +184,9 @@ public class MainGUI extends Application {
         GameSession session = controller.getSession();
         Character hero = session.getHero();
         Character enemy = session.getCurrentBattle().getEnemy();
-        waveLabel.setText("Wave " + session.getCurrentWave() + " of " + session.getTotalWaves()
-                + " | Potions: " + session.getRemainingPotions());
-        stateLabel.setText("State: " + formatState(session.getState()));
+        waveLabel.setText("Ondata " + session.getCurrentWave() + " di " + session.getTotalWaves()
+                + " | Pozioni: " + session.getRemainingPotions());
+        stateLabel.setText("Stato: " + formatState(session.getState()));
         updateCombatant(heroLabel, heroHpBar, hero);
         updateCombatant(enemyLabel, enemyHpBar, enemy);
 
@@ -205,10 +205,10 @@ public class MainGUI extends Application {
 
     private String formatState(GameState state) {
         return switch (state) {
-            case IN_PROGRESS -> "Battle in progress";
-            case WAVE_WON -> "Wave won - continue when ready";
-            case VICTORY -> "Victory";
-            case DEFEAT -> "Defeat";
+            case IN_PROGRESS -> "Scontro in corso";
+            case WAVE_WON -> "Ondata superata - continua quando vuoi";
+            case VICTORY -> "Vittoria";
+            case DEFEAT -> "Sconfitta";
         };
     }
 

@@ -1,44 +1,74 @@
+# UNICAM RPG Arena
 
-# ⚔️ UNICAM RPG Auto-Battler
+Progetto Java di gioco di ruolo a turni per l'esame di Metodologie di
+Programmazione dell'Universita di Camerino (UNICAM).
 
-Progetto per l'esame di Metodologie di Programmazione (Informatica per la Comunicazione Digitale - UNICAM).
-Sviluppato da **Ahmed Muhammad Hasan** (Matricola: 125944).
+Autore: Ahmed Muhammad Hasan, matricola 125944.
 
-## 🎮 Descrizione
-Un videogioco gestionale a turni in cui un eroe affronta ondate di nemici procedurali. Il progetto implementa una rigorosa architettura MVC, vari Design Pattern (Observer, Decorator, Strategy, Factory), un'interfaccia grafica in JavaFX e il salvataggio dei dati in formato JSON tramite pattern DAO.
+## Funzionalita
 
-## 📚 Documentazione
-Tutta la documentazione tecnica, le scelte architetturali, i diagrammi (se presenti) e la dichiarazione di utilizzo dell'AI sono disponibili nella Wiki del repository.
+- Interfaccia grafica JavaFX.
+- Combattimenti a turni contro nemici generati proceduralmente.
+- Azioni del giocatore: attacco, difesa e uso di pozioni limitate.
+- Avanzamento a ondate con stati di vittoria e sconfitta.
+- Registro dello scontro e barre della vita di eroe e nemico.
+- Persistenza JSON dell'intera sessione di gioco attiva.
+- Test automatici per combattimento, flusso di gioco, controller e persistenza.
+- Verifica della build su Linux tramite GitHub Actions.
 
-👉 **[Clicca qui per leggere la Wiki completa](https://github.com/hasansanii03/UNICAM-RPG-Project/wiki)**
+## Requisiti
 
+- JDK 21.
+- Connessione Internet alla prima build, per scaricare le dipendenze Gradle.
 
-## 🚀 Come avviare il progetto
+## Compilazione Ed Esecuzione
 
-Il progetto utilizza **Gradle** per la gestione delle dipendenze e la build. Non è necessario avere Gradle installato sul computer, basta usare il wrapper incluso (`gradlew`).
+Dalla directory radice del repository eseguire i comandi seguenti.
 
-### Prerequisiti
-* Java Development Kit (JDK) 21 o superiore.
+Linux o macOS:
 
-### Comandi da terminale
-Posizionati nella cartella principale del progetto ed esegui:
-
-# **Per compilare il progetto:**
 ```bash
 ./gradlew build
-(Su Windows: gradlew build)
-
- Per avviare l'interfaccia grafica (JavaFX):
-
-# Bash
 ./gradlew run
-(Su Windows: gradlew run)
+```
 
-# 🛠 Tecnologie Utilizzate
- Linguaggio: Java 21
+Windows PowerShell:
 
- Build System: Gradle
+```powershell
+.\gradlew.bat build
+.\gradlew.bat run
+```
 
- GUI: JavaFX
+Il task `run` apre l'interfaccia JavaFX. Il task `build` compila l'applicazione
+ed esegue tutti i test automatici.
 
- Persistenza: Google Gson (JSON)
+## Persistenza
+
+L'applicazione salva la sessione corrente in:
+
+```text
+~/.unicam-rpg/savegame.json
+```
+
+Il salvataggio include statistiche di eroe e nemico, tipo di azione di
+combattimento, ondata corrente, pozioni residue, turno corrente e stato della
+partita. I dati di esecuzione non sono versionati in Git.
+
+## Documentazione
+
+La Wiki del progetto documenta architettura, responsabilita delle classi,
+persistenza, estendibilita, test e scelte di sviluppo:
+
+https://github.com/hasansanii03/UNICAM-RPG-Project/wiki
+
+## Dichiarazione AI
+
+Durante lo sviluppo sono stati usati strumenti di AI generativa come supporto.
+L'utilizzo ha incluso revisione dell'architettura iniziale, proposte di
+refactoring per combattimento incrementale e persistenza della sessione,
+stesura di casi di test, diagnosi di configurazioni Gradle e JavaFX e revisione
+di README e Wiki.
+
+L'autore ha revisionato i suggerimenti, integrato le modifiche, eseguito
+l'applicazione e i test automatici e rimane responsabile delle scelte
+progettuali e del codice consegnato.

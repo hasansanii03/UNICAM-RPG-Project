@@ -19,10 +19,10 @@ public class CriticalAttack implements CombatAction {
 
     public CriticalAttack(double criticalChance, RandomGenerator random) {
         if (!Double.isFinite(criticalChance) || criticalChance < 0 || criticalChance > 1) {
-            throw new IllegalArgumentException("criticalChance must be between zero and one");
+            throw new IllegalArgumentException("la probabilita critica deve essere compresa tra zero e uno");
         }
         this.criticalChance = criticalChance;
-        this.random = Objects.requireNonNull(random, "random must not be null");
+        this.random = Objects.requireNonNull(random, "random non puo' essere null");
     }
 
     @Override

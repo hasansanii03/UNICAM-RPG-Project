@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.game;
 
-/** State of a game session across multiple waves. */
+/** Stato di una partita attraverso piu ondate. */
 public enum GameState {
     IN_PROGRESS,
     WAVE_WON,

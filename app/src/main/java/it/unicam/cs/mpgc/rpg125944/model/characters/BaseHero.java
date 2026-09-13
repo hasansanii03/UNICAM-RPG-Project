@@ -20,21 +20,21 @@ public class BaseHero implements Character {
     private final List<Observer> observers = new ArrayList<>();
 
     public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.name = Objects.requireNonNull(name, "il nome non puo' essere null");
         if (name.isBlank()) {
-            throw new IllegalArgumentException("name must not be blank");
+            throw new IllegalArgumentException("il nome non puo' essere vuoto");
         }
         if (maxHp <= 0) {
-            throw new IllegalArgumentException("maxHp must be positive");
+            throw new IllegalArgumentException("gli HP massimi devono essere positivi");
         }
         if (baseAttack < 0 || baseDefense < 0) {
-            throw new IllegalArgumentException("combat statistics must not be negative");
+            throw new IllegalArgumentException("le statistiche di combattimento non possono essere negative");
         }
         this.maxHp = maxHp;
         this.hp = maxHp;
         this.baseAttack = baseAttack;
         this.baseDefense = baseDefense;
-        this.combatAction = Objects.requireNonNull(combatAction, "combatAction must not be null");
+        this.combatAction = Objects.requireNonNull(combatAction, "combatAction non puo' essere null");
     }
 
     // CORRETTO: Rimosso il blocco duplicato di inizializzazione che c'era qui
@@ -77,7 +77,7 @@ public class BaseHero implements Character {
     @Override
     public int takeDamage(int damage) {
         if (damage < 0) {
-            throw new IllegalArgumentException("damage must not be negative");
+            throw new IllegalArgumentException("il danno non puo' essere negativo");
         }
         int actualDamage = Math.min(hp, Math.max(0, damage - this.getDefense()));
         this.hp -= actualDamage;
@@ -91,7 +91,7 @@ public class BaseHero implements Character {
     @Override
     public int heal(int amount) {
         if (amount < 0) {
-            throw new IllegalArgumentException("healing must not be negative");
+            throw new IllegalArgumentException("la cura non puo' essere negativa");
         }
         int restoredHp = Math.min(amount, maxHp - hp);
         hp += restoredHp;
@@ -111,7 +111,7 @@ public class BaseHero implements Character {
     // Usato SOLO dal sistema di persistenza per ripristinare gli HP senza passare da takeDamage
     public void setHpForLoading(int loadedHp) {
         if (loadedHp < 0 || loadedHp > this.maxHp) {
-            throw new IllegalArgumentException("loadedHp must be between zero and maxHp");
+            throw new IllegalArgumentException("gli HP caricati devono essere compresi tra zero e gli HP massimi");
         }
         this.hp = loadedHp;
         notifyObservers();

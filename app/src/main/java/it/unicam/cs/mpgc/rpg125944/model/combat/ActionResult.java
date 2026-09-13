@@ -1,5 +1,5 @@
 package it.unicam.cs.mpgc.rpg125944.model.combat;
 
-/** Immutable outcome of a combat action. */
+/** Esito immutabile di un'azione di combattimento. */
 public record ActionResult(int rawDamage, int damageDealt, boolean critical) {
 }

@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
-/** Versioned DTO for a complete game session. */
+/** DTO versionato per una partita completa. */
 public class GameSaveData {
     public int formatVersion;
     public int totalWaves;

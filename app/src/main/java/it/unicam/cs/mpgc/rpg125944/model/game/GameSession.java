@@ -9,7 +9,7 @@ import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 
 import java.util.Objects;
 
-/** Owns the state and valid transitions of one game session. */
+/** Possiede lo stato e le transizioni valide di una partita. */
 public class GameSession {
     private final Character hero;
     private final EnemyProvider enemyProvider;
@@ -33,21 +33,21 @@ public class GameSession {
             int currentWave,
             GameState state
     ) {
-        this.hero = Objects.requireNonNull(hero, "hero must not be null");
-        this.enemyProvider = Objects.requireNonNull(enemyProvider, "enemyProvider must not be null");
+        this.hero = Objects.requireNonNull(hero, "l'eroe non puo' essere null");
+        this.enemyProvider = Objects.requireNonNull(enemyProvider, "enemyProvider non puo' essere null");
         if (totalWaves <= 0) {
-            throw new IllegalArgumentException("totalWaves must be positive");
+            throw new IllegalArgumentException("il numero totale di ondate deve essere positivo");
         }
         if (remainingPotions < 0) {
-            throw new IllegalArgumentException("remainingPotions must not be negative");
+            throw new IllegalArgumentException("le pozioni residue non possono essere negative");
         }
         if (currentWave <= 0 || currentWave > totalWaves) {
-            throw new IllegalArgumentException("currentWave must be within the game range");
+            throw new IllegalArgumentException("l'ondata corrente deve essere compresa nel range della partita");
         }
         this.totalWaves = totalWaves;
         this.remainingPotions = remainingPotions;
         this.currentWave = currentWave;
-        this.state = Objects.requireNonNull(state, "state must not be null");
+        this.state = Objects.requireNonNull(state, "lo stato non puo' essere null");
     }
 
     public static GameSession restore(
@@ -63,7 +63,7 @@ public class GameSession {
         GameSession session = new GameSession(
                 hero, enemyProvider, totalWaves, remainingPotions, currentWave, state
         );
-        session.currentBattle = new Battle(hero, Objects.requireNonNull(enemy, "enemy must not be null"),
+        session.currentBattle = new Battle(hero, Objects.requireNonNull(enemy, "il nemico non puo' essere null"),
                 remainingPotions, turnNumber);
         session.validateRestoredState();
         return session;
@@ -71,7 +71,7 @@ public class GameSession {
 
     public TurnResult executePlayerAction(PlayerAction action) {
         if (state != GameState.IN_PROGRESS) {
-            throw new IllegalStateException("no action is allowed in the current game state");
+            throw new IllegalStateException("non e' possibile eseguire azioni nello stato corrente della partita");
         }
 
         TurnResult result = currentBattle.executeTurn(action);
@@ -86,7 +86,7 @@ public class GameSession {
 
     public void startNextWave() {
         if (state != GameState.WAVE_WON) {
-            throw new IllegalStateException("the next wave is not available");
+            throw new IllegalStateException("la prossima ondata non e' disponibile");
         }
         currentWave++;
         state = GameState.IN_PROGRESS;
@@ -124,20 +124,20 @@ public class GameSession {
     private void validateRestoredState() {
         BattleState battleState = currentBattle.getState();
         if (state == GameState.IN_PROGRESS && battleState != BattleState.IN_PROGRESS) {
-            throw new IllegalArgumentException("an active game requires an active battle");
+            throw new IllegalArgumentException("una partita attiva richiede uno scontro attivo");
         }
         if ((state == GameState.WAVE_WON || state == GameState.VICTORY)
                 && battleState != BattleState.HERO_WON) {
-            throw new IllegalArgumentException("a won game state requires a defeated enemy");
+            throw new IllegalArgumentException("uno stato di vittoria richiede un nemico sconfitto");
         }
         if (state == GameState.DEFEAT && battleState != BattleState.HERO_LOST) {
-            throw new IllegalArgumentException("a defeated game state requires a defeated hero");
+            throw new IllegalArgumentException("uno stato di sconfitta richiede un eroe sconfitto");
         }
         if (state == GameState.WAVE_WON && currentWave >= totalWaves) {
-            throw new IllegalArgumentException("the last wave must produce victory");
+            throw new IllegalArgumentException("l'ultima ondata deve produrre la vittoria");
         }
         if (state == GameState.VICTORY && currentWave != totalWaves) {
-            throw new IllegalArgumentException("victory requires the last wave");
+            throw new IllegalArgumentException("la vittoria richiede l'ultima ondata");
         }
     }
 

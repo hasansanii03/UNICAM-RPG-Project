@@ -19,20 +19,20 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
-/** JSON implementation of the repository for complete game sessions. */
+/** Implementazione JSON del repository per partite complete. */
 public class JsonGameRepository implements GameRepository {
     private static final int FORMAT_VERSION = 1;
     private final Path savePath;
     private final Gson gson;
 
     public JsonGameRepository(Path savePath) {
-        this.savePath = Objects.requireNonNull(savePath, "savePath must not be null");
+        this.savePath = Objects.requireNonNull(savePath, "savePath non puo' essere null");
         this.gson = new Gson();
     }
 
     @Override
     public void save(GameSession session) {
-        Objects.requireNonNull(session, "session must not be null");
+        Objects.requireNonNull(session, "la partita non puo' essere null");
         GameSaveData data = toSaveData(session);
         try {
             Path parent = savePath.toAbsolutePath().getParent();
@@ -43,13 +43,13 @@ public class JsonGameRepository implements GameRepository {
                 gson.toJson(data, writer);
             }
         } catch (IOException | RuntimeException exception) {
-            throw new PersistenceException("unable to save the game", exception);
+            throw new PersistenceException("impossibile salvare la partita", exception);
         }
     }
 
     @Override
     public Optional<GameSession> load(EnemyProvider enemyProvider) {
-        Objects.requireNonNull(enemyProvider, "enemyProvider must not be null");
+        Objects.requireNonNull(enemyProvider, "enemyProvider non puo' essere null");
         if (!Files.exists(savePath)) {
             return Optional.empty();
         }
@@ -57,7 +57,7 @@ public class JsonGameRepository implements GameRepository {
             GameSaveData data = gson.fromJson(reader, GameSaveData.class);
             return Optional.of(toSession(data, enemyProvider));
         } catch (IOException | JsonParseException | IllegalArgumentException exception) {
-            throw new PersistenceException("unable to load the saved game", exception);
+            throw new PersistenceException("impossibile caricare la partita salvata", exception);
         }
     }
 
@@ -76,10 +76,10 @@ public class JsonGameRepository implements GameRepository {
 
     private GameSession toSession(GameSaveData data, EnemyProvider enemyProvider) {
         if (data == null || data.formatVersion != FORMAT_VERSION) {
-            throw new IllegalArgumentException("unsupported save format");
+            throw new IllegalArgumentException("formato di salvataggio non supportato");
         }
         if (data.gameState == null) {
-            throw new IllegalArgumentException("missing game state");
+            throw new IllegalArgumentException("stato della partita mancante");
         }
         return GameSession.restore(
                 toCharacter(data.hero),
@@ -106,17 +106,17 @@ public class JsonGameRepository implements GameRepository {
             data.actionType = "CRITICAL";
             data.criticalChance = criticalAttack.getCriticalChance();
         } else {
-            throw new IllegalArgumentException("unsupported combat action");
+            throw new IllegalArgumentException("azione di combattimento non supportata");
         }
         return data;
     }
 
     private Character toCharacter(CharacterSaveData data) {
         if (data == null) {
-            throw new IllegalArgumentException("missing combatant data");
+            throw new IllegalArgumentException("dati del combattente mancanti");
         }
         if (data.name == null || data.actionType == null) {
-            throw new IllegalArgumentException("incomplete combatant data");
+            throw new IllegalArgumentException("dati del combattente incompleti");
         }
         BaseHero character = new BaseHero(data.name, data.maxHp, data.attack, data.defense,
                 toAction(data.actionType, data.criticalChance));
@@ -131,6 +131,6 @@ public class JsonGameRepository implements GameRepository {
         if ("CRITICAL".equals(actionType)) {
             return new CriticalAttack(criticalChance);
         }
-        throw new IllegalArgumentException("unsupported action type");
+        throw new IllegalArgumentException("tipo di azione non supportato");
     }
 }

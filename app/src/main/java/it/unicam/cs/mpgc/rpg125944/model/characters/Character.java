@@ -10,12 +10,12 @@ public interface Character {
     int getDefense();
     
     /**
-     * Applies incoming damage and returns the damage received after defenses.
+     * Applica il danno in ingresso e restituisce il danno subito dopo le difese.
      */
     int takeDamage(int damage);
 
     /**
-     * Restores hit points and returns the amount effectively restored.
+     * Ripristina punti vita e restituisce la quantita effettivamente recuperata.
      */
     int heal(int amount);
     boolean isAlive();
