@@ -24,16 +24,17 @@ class BattleTest {
     }
 
     @Test
-    void defendReducesIncomingDamage() {
+    void defendCounterattacksAndReducesIncomingDamage() {
         Battle battle = battleWith(30, 10, 0, 20, 10, 0, 1);
 
         TurnResult result = battle.executeTurn(PlayerAction.DEFEND);
 
-        assertNull(result.playerActionResult());
+        assertNotNull(result.playerActionResult());
+        assertEquals(5, result.playerActionResult().damageDealt());
         assertNotNull(result.enemyActionResult());
         assertEquals(5, result.enemyActionResult().damageDealt());
         assertEquals(25, battle.getHero().getHp());
-        assertEquals(20, battle.getEnemy().getHp());
+        assertEquals(15, battle.getEnemy().getHp());
     }
 
     @Test

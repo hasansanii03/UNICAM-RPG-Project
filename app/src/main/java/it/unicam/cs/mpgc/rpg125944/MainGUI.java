@@ -152,7 +152,10 @@ public class MainGUI extends Application {
         battleLog.appendText("\nTurno " + result.turnNumber() + ": ");
         switch (result.playerAction()) {
             case ATTACK -> appendAction(session.getHero().getName(), result.playerActionResult());
-            case DEFEND -> battleLog.appendText(session.getHero().getName() + " si difende.");
+            case DEFEND -> {
+                battleLog.appendText(session.getHero().getName() + " si difende e ");
+                appendActionResult(result.playerActionResult());
+            }
             case USE_POTION -> battleLog.appendText(session.getHero().getName()
                     + " recupera " + result.hpRestored() + " HP.");
         }

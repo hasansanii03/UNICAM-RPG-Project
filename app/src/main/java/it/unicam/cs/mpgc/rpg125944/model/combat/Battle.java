@@ -10,6 +10,7 @@ import java.util.Objects;
  */
 public class Battle {
     public static final int POTION_HEALING = 20;
+    private static final int COUNTERATTACK_DIVISOR = 2;
 
     private final Character hero;
     private final Character enemy;
@@ -47,6 +48,10 @@ public class Battle {
 
         if (playerAction == PlayerAction.ATTACK) {
             playerActionResult = hero.getCombatAction().execute(hero, enemy);
+        } else if (playerAction == PlayerAction.DEFEND) {
+            int rawDamage = (hero.getAttackPower() + 1) / COUNTERATTACK_DIVISOR;
+            int damageDealt = enemy.takeDamage(rawDamage);
+            playerActionResult = new ActionResult(rawDamage, damageDealt, false);
         } else if (playerAction == PlayerAction.USE_POTION) {
             if (remainingPotions == 0) {
                 throw new IllegalStateException("non restano pozioni");
