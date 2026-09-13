@@ -51,6 +51,9 @@ public class Battle {
             if (remainingPotions == 0) {
                 throw new IllegalStateException("no potions remaining");
             }
+            if (hero.getHp() == hero.getMaxHp()) {
+                throw new IllegalStateException("hero already has full health");
+            }
             remainingPotions--;
             hpRestored = hero.heal(POTION_HEALING);
         }

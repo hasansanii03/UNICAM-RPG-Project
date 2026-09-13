@@ -193,7 +193,8 @@ public class MainGUI extends Application {
         boolean battleActive = session.getState() == GameState.IN_PROGRESS;
         attackButton.setDisable(!battleActive);
         defendButton.setDisable(!battleActive);
-        potionButton.setDisable(!battleActive || session.getRemainingPotions() == 0);
+        potionButton.setDisable(!battleActive || session.getRemainingPotions() == 0
+                || hero.getHp() == hero.getMaxHp());
         nextWaveButton.setDisable(session.getState() != GameState.WAVE_WON);
     }
 

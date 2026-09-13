@@ -42,7 +42,7 @@ public class JsonGameRepository implements GameRepository {
             try (Writer writer = Files.newBufferedWriter(savePath)) {
                 gson.toJson(data, writer);
             }
-        } catch (IOException exception) {
+        } catch (IOException | RuntimeException exception) {
             throw new PersistenceException("unable to save the game", exception);
         }
     }
@@ -100,7 +100,14 @@ public class JsonGameRepository implements GameRepository {
         data.maxHp = character.getMaxHp();
         data.attack = character.getAttackPower();
         data.defense = character.getDefense();
-        data.actionType = character.getCombatAction() instanceof CriticalAttack ? "CRITICAL" : "BASIC";
+        if (character.getCombatAction() instanceof BasicAttack) {
+            data.actionType = "BASIC";
+        } else if (character.getCombatAction() instanceof CriticalAttack criticalAttack) {
+            data.actionType = "CRITICAL";
+            data.criticalChance = criticalAttack.getCriticalChance();
+        } else {
+            throw new IllegalArgumentException("unsupported combat action");
+        }
         return data;
     }
 
@@ -108,18 +115,21 @@ public class JsonGameRepository implements GameRepository {
         if (data == null) {
             throw new IllegalArgumentException("missing combatant data");
         }
+        if (data.name == null || data.actionType == null) {
+            throw new IllegalArgumentException("incomplete combatant data");
+        }
         BaseHero character = new BaseHero(data.name, data.maxHp, data.attack, data.defense,
-                toAction(data.actionType));
+                toAction(data.actionType, data.criticalChance));
         character.setHpForLoading(data.hp);
         return character;
     }
 
-    private CombatAction toAction(String actionType) {
+    private CombatAction toAction(String actionType, double criticalChance) {
         if ("BASIC".equals(actionType)) {
             return new BasicAttack();
         }
         if ("CRITICAL".equals(actionType)) {
-            return new CriticalAttack(0.2);
+            return new CriticalAttack(criticalChance);
         }
         throw new IllegalArgumentException("unsupported action type");
     }

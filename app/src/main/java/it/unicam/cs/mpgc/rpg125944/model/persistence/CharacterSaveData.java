@@ -8,4 +8,5 @@ public class CharacterSaveData {
     public int attack;
     public int defense;
     public String actionType;
+    public double criticalChance;
 }

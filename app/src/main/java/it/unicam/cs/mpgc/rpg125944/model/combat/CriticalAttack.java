@@ -18,7 +18,7 @@ public class CriticalAttack implements CombatAction {
     }
 
     public CriticalAttack(double criticalChance, RandomGenerator random) {
-        if (criticalChance < 0 || criticalChance > 1) {
+        if (!Double.isFinite(criticalChance) || criticalChance < 0 || criticalChance > 1) {
             throw new IllegalArgumentException("criticalChance must be between zero and one");
         }
         this.criticalChance = criticalChance;
@@ -35,5 +35,9 @@ public class CriticalAttack implements CombatAction {
         }
         int damageDealt = target.takeDamage(rawDamage);
         return new ActionResult(rawDamage, damageDealt, isCritical);
+    }
+
+    public double getCriticalChance() {
+        return criticalChance;
     }
 }

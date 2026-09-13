@@ -79,7 +79,7 @@ public class BaseHero implements Character {
         if (damage < 0) {
             throw new IllegalArgumentException("damage must not be negative");
         }
-        int actualDamage = Math.max(0, damage - this.getDefense());
+        int actualDamage = Math.min(hp, Math.max(0, damage - this.getDefense()));
         this.hp -= actualDamage;
         if (this.hp < 0) {
             this.hp = 0;

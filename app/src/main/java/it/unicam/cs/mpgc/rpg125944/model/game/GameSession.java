@@ -20,19 +20,34 @@ public class GameSession {
     private GameState state;
 
     public GameSession(Character hero, EnemyProvider enemyProvider, int totalWaves, int availablePotions) {
+        this(hero, enemyProvider, totalWaves, availablePotions, 1, GameState.IN_PROGRESS);
+        createBattle();
+        synchronizeStateWithBattle();
+    }
+
+    private GameSession(
+            Character hero,
+            EnemyProvider enemyProvider,
+            int totalWaves,
+            int remainingPotions,
+            int currentWave,
+            GameState state
+    ) {
         this.hero = Objects.requireNonNull(hero, "hero must not be null");
         this.enemyProvider = Objects.requireNonNull(enemyProvider, "enemyProvider must not be null");
         if (totalWaves <= 0) {
             throw new IllegalArgumentException("totalWaves must be positive");
         }
-        if (availablePotions < 0) {
-            throw new IllegalArgumentException("availablePotions must not be negative");
+        if (remainingPotions < 0) {
+            throw new IllegalArgumentException("remainingPotions must not be negative");
+        }
+        if (currentWave <= 0 || currentWave > totalWaves) {
+            throw new IllegalArgumentException("currentWave must be within the game range");
         }
         this.totalWaves = totalWaves;
-        this.remainingPotions = availablePotions;
-        this.currentWave = 1;
-        this.state = GameState.IN_PROGRESS;
-        createBattle();
+        this.remainingPotions = remainingPotions;
+        this.currentWave = currentWave;
+        this.state = Objects.requireNonNull(state, "state must not be null");
     }
 
     public static GameSession restore(
@@ -45,14 +60,11 @@ public class GameSession {
             int turnNumber,
             GameState state
     ) {
-        if (currentWave <= 0 || currentWave > totalWaves) {
-            throw new IllegalArgumentException("currentWave must be within the game range");
-        }
-        GameSession session = new GameSession(hero, enemyProvider, totalWaves, remainingPotions);
-        session.currentWave = currentWave;
+        GameSession session = new GameSession(
+                hero, enemyProvider, totalWaves, remainingPotions, currentWave, state
+        );
         session.currentBattle = new Battle(hero, Objects.requireNonNull(enemy, "enemy must not be null"),
                 remainingPotions, turnNumber);
-        session.state = Objects.requireNonNull(state, "state must not be null");
         session.validateRestoredState();
         return session;
     }
@@ -120,6 +132,20 @@ public class GameSession {
         }
         if (state == GameState.DEFEAT && battleState != BattleState.HERO_LOST) {
             throw new IllegalArgumentException("a defeated game state requires a defeated hero");
+        }
+        if (state == GameState.WAVE_WON && currentWave >= totalWaves) {
+            throw new IllegalArgumentException("the last wave must produce victory");
+        }
+        if (state == GameState.VICTORY && currentWave != totalWaves) {
+            throw new IllegalArgumentException("victory requires the last wave");
+        }
+    }
+
+    private void synchronizeStateWithBattle() {
+        if (currentBattle.getState() == BattleState.HERO_LOST) {
+            state = GameState.DEFEAT;
+        } else if (currentBattle.getState() == BattleState.HERO_WON) {
+            state = currentWave == totalWaves ? GameState.VICTORY : GameState.WAVE_WON;
         }
     }
 }

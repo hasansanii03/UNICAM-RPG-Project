@@ -31,6 +31,7 @@ class JsonGameRepositoryTest {
         GameSession session = new GameSession(
                 new BaseHero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
         );
+        session.getHero().takeDamage(10);
         session.executePlayerAction(PlayerAction.USE_POTION);
 
         repository.save(session);
@@ -55,6 +56,15 @@ class JsonGameRepositoryTest {
     void rejectsMalformedJson() throws IOException {
         Path savePath = temporaryDirectory.resolve("invalid.json");
         Files.writeString(savePath, "not json");
+        JsonGameRepository repository = new JsonGameRepository(savePath);
+
+        assertThrows(PersistenceException.class, () -> repository.load(enemyProvider));
+    }
+
+    @Test
+    void rejectsIncompleteJson() throws IOException {
+        Path savePath = temporaryDirectory.resolve("incomplete.json");
+        Files.writeString(savePath, "{\"formatVersion\":1,\"gameState\":\"IN_PROGRESS\"}");
         JsonGameRepository repository = new JsonGameRepository(savePath);
 
         assertThrows(PersistenceException.class, () -> repository.load(enemyProvider));

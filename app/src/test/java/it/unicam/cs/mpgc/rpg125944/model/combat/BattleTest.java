@@ -66,6 +66,14 @@ class BattleTest {
         assertThrows(IllegalStateException.class, () -> battle.executeTurn(PlayerAction.USE_POTION));
     }
 
+    @Test
+    void cannotUsePotionAtFullHealth() {
+        Battle battle = battleWith(30, 10, 0, 20, 10, 0, 1);
+
+        assertThrows(IllegalStateException.class, () -> battle.executeTurn(PlayerAction.USE_POTION));
+        assertEquals(1, battle.getRemainingPotions());
+    }
+
     private Battle battleWith(
             int heroHp,
             int heroAttack,

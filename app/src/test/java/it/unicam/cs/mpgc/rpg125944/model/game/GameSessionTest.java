@@ -7,6 +7,8 @@ import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -55,6 +57,21 @@ class GameSessionTest {
         GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 2, 0);
 
         assertThrows(IllegalStateException.class, session::startNextWave);
+    }
+
+    @Test
+    void restoreDoesNotGenerateAnUnrelatedEnemy() {
+        AtomicInteger generatedEnemies = new AtomicInteger();
+        EnemyProvider provider = wave -> {
+            generatedEnemies.incrementAndGet();
+            return new BaseHero("Generated", 10, 1, 0, new BasicAttack());
+        };
+        Character hero = hero(20, 10);
+        Character enemy = new BaseHero("Saved enemy", 10, 1, 0, new BasicAttack());
+
+        GameSession.restore(hero, enemy, provider, 2, 1, 0, 1, GameState.IN_PROGRESS);
+
+        assertEquals(0, generatedEnemies.get());
     }
 
     private Character hero(int hp, int attack) {
