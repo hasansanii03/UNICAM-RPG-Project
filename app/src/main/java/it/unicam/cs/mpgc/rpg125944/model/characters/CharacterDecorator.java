@@ -41,8 +41,8 @@ public abstract class CharacterDecorator implements Character {
     }
 
     @Override
-    public void takeDamage(int damage) {
-        character.takeDamage(damage);
+    public int takeDamage(int damage) {
+        return character.takeDamage(damage);
     }
 
     @Override

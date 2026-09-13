@@ -9,7 +9,10 @@ public interface Character {
     int getAttackPower();
     int getDefense();
     
-    void takeDamage(int damage);
+    /**
+     * Applies incoming damage and returns the damage received after defenses.
+     */
+    int takeDamage(int damage);
     boolean isAlive();
     
     // Questo è il metodo che mancava per far compilare tutto!

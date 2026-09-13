@@ -2,28 +2,39 @@ package it.unicam.cs.mpgc.rpg125944.model.characters;
 
 import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
 import it.unicam.cs.mpgc.rpg125944.util.Observer;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BaseHero implements Character {
     
-    private String name;
+    private final String name;
     private int hp;
-    private int maxHp;
-    private int baseAttack;
-    private int baseDefense;
-    private CombatAction combatAction; 
+    private final int maxHp;
+    private final int baseAttack;
+    private final int baseDefense;
+    private final CombatAction combatAction;
     
     // CORRETTO: Aggiunto <Observer>
-    private List<Observer> observers = new ArrayList<>();
+    private final List<Observer> observers = new ArrayList<>();
 
     public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        if (name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
+        if (maxHp <= 0) {
+            throw new IllegalArgumentException("maxHp must be positive");
+        }
+        if (baseAttack < 0 || baseDefense < 0) {
+            throw new IllegalArgumentException("combat statistics must not be negative");
+        }
         this.maxHp = maxHp;
-        this.hp = maxHp; // Inizia con gli HP al massimo
+        this.hp = maxHp;
         this.baseAttack = baseAttack;
         this.baseDefense = baseDefense;
-        this.combatAction = combatAction; 
+        this.combatAction = Objects.requireNonNull(combatAction, "combatAction must not be null");
     }
 
     // CORRETTO: Rimosso il blocco duplicato di inizializzazione che c'era qui
@@ -64,17 +75,17 @@ public class BaseHero implements Character {
     }
 
     @Override
-    public void takeDamage(int damage) {
-        // Il danno effettivo è calcolato sottraendo la difesa
+    public int takeDamage(int damage) {
+        if (damage < 0) {
+            throw new IllegalArgumentException("damage must not be negative");
+        }
         int actualDamage = Math.max(0, damage - this.getDefense());
         this.hp -= actualDamage;
         if (this.hp < 0) {
             this.hp = 0;
         }
-        System.out.println(this.name + " subisce " + actualDamage + " danni. HP rimanenti: " + this.hp);
-        
-        // CORRETTO: Avvisa l'interfaccia grafica che gli HP sono cambiati!
         notifyObservers();
+        return actualDamage;
     }
 
     @Override
@@ -87,9 +98,11 @@ public class BaseHero implements Character {
         return combatAction;
     }
     // Usato SOLO dal sistema di persistenza per ripristinare gli HP senza passare da takeDamage
-public void setHpForLoading(int loadedHp) {
-    if(loadedHp >= 0 && loadedHp <= this.maxHp) {
+    public void setHpForLoading(int loadedHp) {
+        if (loadedHp < 0 || loadedHp > this.maxHp) {
+            throw new IllegalArgumentException("loadedHp must be between zero and maxHp");
+        }
         this.hp = loadedHp;
+        notifyObservers();
     }
-}
 }
