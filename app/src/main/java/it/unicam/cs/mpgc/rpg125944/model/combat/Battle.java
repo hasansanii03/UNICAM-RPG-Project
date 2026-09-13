@@ -18,13 +18,20 @@ public class Battle {
     private int remainingPotions;
 
     public Battle(Character hero, Character enemy, int availablePotions) {
+        this(hero, enemy, availablePotions, 1);
+    }
+
+    public Battle(Character hero, Character enemy, int availablePotions, int turnNumber) {
         this.hero = Objects.requireNonNull(hero, "hero must not be null");
         this.enemy = Objects.requireNonNull(enemy, "enemy must not be null");
         if (availablePotions < 0) {
             throw new IllegalArgumentException("availablePotions must not be negative");
         }
+        if (turnNumber <= 0) {
+            throw new IllegalArgumentException("turnNumber must be positive");
+        }
         this.remainingPotions = availablePotions;
-        this.turnNumber = 1;
+        this.turnNumber = turnNumber;
         updateState();
     }
 

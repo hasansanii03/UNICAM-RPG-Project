@@ -10,6 +10,8 @@ import it.unicam.cs.mpgc.rpg125944.model.combat.TurnResult;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyFactory;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameState;
+import it.unicam.cs.mpgc.rpg125944.model.persistence.JsonGameRepository;
+import it.unicam.cs.mpgc.rpg125944.model.persistence.PersistenceException;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,13 +24,18 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.nio.file.Path;
+
 /** JavaFX view that delegates all game commands to GameController. */
 public class MainGUI extends Application {
     private static final int TOTAL_WAVES = 3;
     private static final int INITIAL_POTIONS = 2;
 
     private final GameController controller = new GameController(
-            new EnemyFactory(), TOTAL_WAVES, INITIAL_POTIONS
+            new EnemyFactory(),
+            TOTAL_WAVES,
+            INITIAL_POTIONS,
+            new JsonGameRepository(Path.of(System.getProperty("user.home"), ".unicam-rpg", "savegame.json"))
     );
 
     private final Label waveLabel = new Label();
@@ -46,7 +53,11 @@ public class MainGUI extends Application {
     @Override
     public void start(Stage stage) {
         Button newGameButton = new Button("New game");
+        Button saveButton = new Button("Save game");
+        Button loadButton = new Button("Load game");
         newGameButton.setOnAction(event -> startNewGame());
+        saveButton.setOnAction(event -> saveGame());
+        loadButton.setOnAction(event -> loadGame());
         attackButton.setOnAction(event -> executeAction(PlayerAction.ATTACK));
         defendButton.setOnAction(event -> executeAction(PlayerAction.DEFEND));
         potionButton.setOnAction(event -> executeAction(PlayerAction.USE_POTION));
@@ -65,6 +76,8 @@ public class MainGUI extends Application {
 
         HBox actions = new HBox(10, attackButton, defendButton, potionButton, nextWaveButton);
         actions.setAlignment(Pos.CENTER);
+        HBox persistenceActions = new HBox(10, saveButton, loadButton);
+        persistenceActions.setAlignment(Pos.CENTER);
         VBox root = new VBox(16,
                 new Label("UNICAM RPG Arena"),
                 waveLabel,
@@ -73,6 +86,7 @@ public class MainGUI extends Application {
                 actions,
                 new Label("Battle log"),
                 battleLog,
+                persistenceActions,
                 newGameButton
         );
         root.setPadding(new Insets(20));
@@ -111,6 +125,25 @@ public class MainGUI extends Application {
             refresh();
         } catch (IllegalStateException exception) {
             battleLog.appendText("\nNext wave unavailable: " + exception.getMessage());
+        }
+    }
+
+    private void saveGame() {
+        try {
+            controller.saveGame();
+            battleLog.appendText("\nGame saved.");
+        } catch (PersistenceException exception) {
+            battleLog.appendText("\nSave failed: " + exception.getMessage());
+        }
+    }
+
+    private void loadGame() {
+        try {
+            controller.loadGame();
+            battleLog.setText("Saved game loaded.");
+            refresh();
+        } catch (PersistenceException | IllegalStateException exception) {
+            battleLog.appendText("\nLoad failed: " + exception.getMessage());
         }
     }
 

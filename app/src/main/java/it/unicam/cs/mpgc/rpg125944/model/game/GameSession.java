@@ -35,6 +35,28 @@ public class GameSession {
         createBattle();
     }
 
+    public static GameSession restore(
+            Character hero,
+            Character enemy,
+            EnemyProvider enemyProvider,
+            int totalWaves,
+            int currentWave,
+            int remainingPotions,
+            int turnNumber,
+            GameState state
+    ) {
+        if (currentWave <= 0 || currentWave > totalWaves) {
+            throw new IllegalArgumentException("currentWave must be within the game range");
+        }
+        GameSession session = new GameSession(hero, enemyProvider, totalWaves, remainingPotions);
+        session.currentWave = currentWave;
+        session.currentBattle = new Battle(hero, Objects.requireNonNull(enemy, "enemy must not be null"),
+                remainingPotions, turnNumber);
+        session.state = Objects.requireNonNull(state, "state must not be null");
+        session.validateRestoredState();
+        return session;
+    }
+
     public TurnResult executePlayerAction(PlayerAction action) {
         if (state != GameState.IN_PROGRESS) {
             throw new IllegalStateException("no action is allowed in the current game state");
@@ -85,5 +107,19 @@ public class GameSession {
 
     private void createBattle() {
         currentBattle = new Battle(hero, enemyProvider.createEnemy(currentWave), remainingPotions);
+    }
+
+    private void validateRestoredState() {
+        BattleState battleState = currentBattle.getState();
+        if (state == GameState.IN_PROGRESS && battleState != BattleState.IN_PROGRESS) {
+            throw new IllegalArgumentException("an active game requires an active battle");
+        }
+        if ((state == GameState.WAVE_WON || state == GameState.VICTORY)
+                && battleState != BattleState.HERO_WON) {
+            throw new IllegalArgumentException("a won game state requires a defeated enemy");
+        }
+        if (state == GameState.DEFEAT && battleState != BattleState.HERO_LOST) {
+            throw new IllegalArgumentException("a defeated game state requires a defeated hero");
+        }
     }
 }
