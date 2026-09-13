@@ -13,6 +13,11 @@ public interface Character {
      * Applies incoming damage and returns the damage received after defenses.
      */
     int takeDamage(int damage);
+
+    /**
+     * Restores hit points and returns the amount effectively restored.
+     */
+    int heal(int amount);
     boolean isAlive();
     
     // Questo è il metodo che mancava per far compilare tutto!

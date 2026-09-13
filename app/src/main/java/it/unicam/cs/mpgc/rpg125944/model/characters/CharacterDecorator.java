@@ -46,6 +46,11 @@ public abstract class CharacterDecorator implements Character {
     }
 
     @Override
+    public int heal(int amount) {
+        return character.heal(amount);
+    }
+
+    @Override
     public boolean isAlive() {
         return character.isAlive();
     }

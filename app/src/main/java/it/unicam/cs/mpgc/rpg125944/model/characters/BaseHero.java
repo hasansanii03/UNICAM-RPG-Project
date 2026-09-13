@@ -89,6 +89,17 @@ public class BaseHero implements Character {
     }
 
     @Override
+    public int heal(int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("healing must not be negative");
+        }
+        int restoredHp = Math.min(amount, maxHp - hp);
+        hp += restoredHp;
+        notifyObservers();
+        return restoredHp;
+    }
+
+    @Override
     public boolean isAlive() {
         return this.hp > 0;
     }

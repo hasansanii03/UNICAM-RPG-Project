@@ -4,8 +4,10 @@ package it.unicam.cs.mpgc.rpg125944.model.combat;
 public record TurnResult(
         int turnNumber,
         PlayerAction playerAction,
-        int damageToEnemy,
-        int damageToHero,
+        ActionResult playerActionResult,
+        ActionResult enemyActionResult,
+        int hpRestored,
+        int remainingPotions,
         BattleState battleState
 ) {
 }
