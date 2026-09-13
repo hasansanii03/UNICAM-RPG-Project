@@ -4,18 +4,23 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.CriticalAttack;
-import java.util.Random;
+import java.util.Objects;
+import java.util.random.RandomGenerator;
 
 /**
  * Factory Pattern per la generazione dei nemici.
  * Incapsula la logica di creazione e il bilanciamento delle statistiche.
  */
-public class EnemyFactory {
+public class EnemyFactory implements EnemyProvider {
 
-    private final Random random;
+    private final RandomGenerator random;
 
     public EnemyFactory() {
-        this.random = new Random();
+        this(RandomGenerator.getDefault());
+    }
+
+    public EnemyFactory(RandomGenerator random) {
+        this.random = Objects.requireNonNull(random, "random non puo' essere null");
     }
 
     /**
@@ -24,6 +29,14 @@ public class EnemyFactory {
      * @return Un'istanza di Character nemico.
      */
     public Character createRandomEnemy(int difficultyLevel) {
+        return createEnemy(difficultyLevel);
+    }
+
+    @Override
+    public Character createEnemy(int difficultyLevel) {
+        if (difficultyLevel <= 0) {
+            throw new IllegalArgumentException("il livello di difficolta deve essere positivo");
+        }
         int enemyType = random.nextInt(3); // Genera un numero da 0 a 2
 
         // Le statistiche scalano in base al livello di difficoltà

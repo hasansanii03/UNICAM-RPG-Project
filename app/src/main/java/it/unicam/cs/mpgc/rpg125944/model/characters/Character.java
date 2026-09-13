@@ -9,7 +9,15 @@ public interface Character {
     int getAttackPower();
     int getDefense();
     
-    void takeDamage(int damage);
+    /**
+     * Applica il danno in ingresso e restituisce il danno subito dopo le difese.
+     */
+    int takeDamage(int damage);
+
+    /**
+     * Ripristina punti vita e restituisce la quantita effettivamente recuperata.
+     */
+    int heal(int amount);
     boolean isAlive();
     
     // Questo è il metodo che mancava per far compilare tutto!

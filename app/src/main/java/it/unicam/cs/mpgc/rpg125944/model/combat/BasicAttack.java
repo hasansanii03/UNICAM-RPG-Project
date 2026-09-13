@@ -9,10 +9,9 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 public class BasicAttack implements CombatAction {
 
     @Override
-    public void execute(Character attacker, Character target) {
-        System.out.println(attacker.getName() + " sferra un attacco contro " + target.getName() + "!");
-        
-        // Il calcolo della difesa viene gestito direttamente dal metodo takeDamage del bersaglio
-        target.takeDamage(attacker.getAttackPower());
+    public ActionResult execute(Character attacker, Character target) {
+        int rawDamage = attacker.getAttackPower();
+        int damageDealt = target.takeDamage(rawDamage);
+        return new ActionResult(rawDamage, damageDealt, false);
     }
 }
