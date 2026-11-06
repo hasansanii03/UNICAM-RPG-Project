@@ -33,3 +33,13 @@ build
 
 # Ignore Kotlin plugin data
 .kotlin
+
+# Impostazioni locali dell'IDE e output di compilazione di VS Code
+.vscode/
+bin/
+
+# File locali per l'assistente AI e materiale del corso (non versionare)
+CLAUDE.md
+.claude/
+Specifica Progetto*.docx
+*.pdf
