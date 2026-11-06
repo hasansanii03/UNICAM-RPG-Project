@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.combat;
 
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
+import it.unicam.cs.mpgc.rpg125944.model.characters.CharacterDecorator;
 
 import java.util.Objects;
 
@@ -114,56 +115,21 @@ public class Battle {
         }
     }
 
-    private static class GuardedCharacter implements Character {
-        private final Character delegate;
+    /**
+     * Decorator usato solo durante la difesa: dimezza il danno in ingresso
+     * (arrotondando per eccesso) e delega tutto il resto al personaggio originale.
+     */
+    private static class GuardedCharacter extends CharacterDecorator {
+        private static final int GUARD_DAMAGE_DIVISOR = 2;
 
-        private GuardedCharacter(Character delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public String getName() {
-            return delegate.getName();
-        }
-
-        @Override
-        public int getHp() {
-            return delegate.getHp();
-        }
-
-        @Override
-        public int getMaxHp() {
-            return delegate.getMaxHp();
-        }
-
-        @Override
-        public int getAttackPower() {
-            return delegate.getAttackPower();
-        }
-
-        @Override
-        public int getDefense() {
-            return delegate.getDefense();
+        private GuardedCharacter(Character character) {
+            super(character);
         }
 
         @Override
         public int takeDamage(int damage) {
-            return delegate.takeDamage((damage + 1) / 2);
-        }
-
-        @Override
-        public int heal(int amount) {
-            return delegate.heal(amount);
-        }
-
-        @Override
-        public boolean isAlive() {
-            return delegate.isAlive();
-        }
-
-        @Override
-        public CombatAction getCombatAction() {
-            return delegate.getCombatAction();
+            int reducedDamage = (damage + GUARD_DAMAGE_DIVISOR - 1) / GUARD_DAMAGE_DIVISOR;
+            return character.takeDamage(reducedDamage);
         }
     }
 }

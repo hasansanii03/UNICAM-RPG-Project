@@ -2,17 +2,19 @@ package it.unicam.cs.mpgc.rpg125944.model.characters;
 
 import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
 
+import java.util.Objects;
+
 /**
  * Classe astratta base per il Decorator Pattern.
  * Implementa Character e contiene un riferimento al Character da decorare.
  */
 public abstract class CharacterDecorator implements Character {
-    
-    // Protected per permettere alle sottoclassi (le armi/armature) di accedervi
-    protected Character character;
 
-    public CharacterDecorator(Character character) {
-        this.character = character;
+    // Protected per permettere alle sottoclassi (armi, armature, difesa) di accedervi
+    protected final Character character;
+
+    protected CharacterDecorator(Character character) {
+        this.character = Objects.requireNonNull(character, "il personaggio da decorare non puo' essere null");
     }
 
     @Override
