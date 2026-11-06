@@ -15,8 +15,6 @@ public class BaseHero implements Character {
     private final int baseAttack;
     private final int baseDefense;
     private final CombatAction combatAction;
-    
-    // CORRETTO: Aggiunto <Observer>
     private final List<Observer> observers = new ArrayList<>();
 
     public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
@@ -36,8 +34,6 @@ public class BaseHero implements Character {
         this.baseDefense = baseDefense;
         this.combatAction = Objects.requireNonNull(combatAction, "combatAction non puo' essere null");
     }
-
-    // CORRETTO: Rimosso il blocco duplicato di inizializzazione che c'era qui
 
     public void addObserver(Observer observer) {
         this.observers.add(observer);
