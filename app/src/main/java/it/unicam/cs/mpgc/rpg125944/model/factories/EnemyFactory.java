@@ -28,10 +28,6 @@ public class EnemyFactory implements EnemyProvider {
      * @param difficultyLevel Il livello dell'ondata attuale.
      * @return Un'istanza di Character nemico.
      */
-    public Character createRandomEnemy(int difficultyLevel) {
-        return createEnemy(difficultyLevel);
-    }
-
     @Override
     public Character createEnemy(int difficultyLevel) {
         if (difficultyLevel <= 0) {

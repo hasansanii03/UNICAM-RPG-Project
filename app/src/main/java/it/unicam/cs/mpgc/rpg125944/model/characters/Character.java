@@ -19,7 +19,9 @@ public interface Character {
      */
     int heal(int amount);
     boolean isAlive();
-    
-    // Questo è il metodo che mancava per far compilare tutto!
+
+    /**
+     * Restituisce la strategia con cui il personaggio attacca.
+     */
     CombatAction getCombatAction();
 }
