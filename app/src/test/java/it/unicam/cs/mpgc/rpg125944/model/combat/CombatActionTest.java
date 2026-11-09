@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.combat;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import org.junit.jupiter.api.Test;
 
@@ -12,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CombatActionTest {
     @Test
     void basicAttackReturnsDamageOutcome() {
-        Character attacker = new BaseHero("Attacker", 20, 8, 0, new BasicAttack());
-        Character target = new BaseHero("Target", 20, 1, 3, new BasicAttack());
+        Character attacker = new Hero("Attacker", 20, 8, 0, new BasicAttack());
+        Character target = new Enemy("Target", 20, 1, 3, new BasicAttack());
 
         ActionResult result = new BasicAttack().execute(attacker, target);
 
@@ -25,8 +26,8 @@ class CombatActionTest {
 
     @Test
     void criticalAttackWithCertaintyDoublesDamage() {
-        Character attacker = new BaseHero("Attacker", 20, 8, 0, new BasicAttack());
-        Character target = new BaseHero("Target", 20, 1, 0, new BasicAttack());
+        Character attacker = new Hero("Attacker", 20, 8, 0, new BasicAttack());
+        Character target = new Enemy("Target", 20, 1, 0, new BasicAttack());
 
         ActionResult result = new CriticalAttack(1).execute(attacker, target);
 

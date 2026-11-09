@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
@@ -22,14 +23,14 @@ class JsonGameRepositoryTest {
     Path temporaryDirectory;
 
     private final EnemyProvider enemyProvider = wave ->
-            new BaseHero("Enemy " + wave, 30, 5, 0, new BasicAttack());
+            new Enemy("Enemy " + wave, 30, 5, 0, new BasicAttack());
 
     @Test
     void savesAndRestoresTheCompleteActiveSession() {
         Path savePath = temporaryDirectory.resolve("savegame.json");
         JsonGameRepository repository = new JsonGameRepository(savePath);
         GameSession session = new GameSession(
-                new BaseHero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
+                new Hero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
         );
         session.getHero().takeDamage(10);
         session.executePlayerAction(PlayerAction.USE_POTION);
@@ -75,7 +76,7 @@ class JsonGameRepositoryTest {
         Path savePath = temporaryDirectory.resolve("nested").resolve("savegame.json");
         JsonGameRepository repository = new JsonGameRepository(savePath);
         GameSession session = new GameSession(
-                new BaseHero("Hero", 20, 10, 0, new BasicAttack()), enemyProvider, 1, 0
+                new Hero("Hero", 20, 10, 0, new BasicAttack()), enemyProvider, 1, 0
         );
 
         repository.save(session);

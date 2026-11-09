@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.combat;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import org.junit.jupiter.api.Test;
 
@@ -84,8 +85,8 @@ class BattleTest {
             int enemyDefense,
             int potions
     ) {
-        Character hero = new BaseHero("Hero", heroHp, heroAttack, heroDefense, new BasicAttack());
-        Character enemy = new BaseHero("Enemy", enemyHp, enemyAttack, enemyDefense, new BasicAttack());
+        Character hero = new Hero("Hero", heroHp, heroAttack, heroDefense, new BasicAttack());
+        Character enemy = new Enemy("Enemy", enemyHp, enemyAttack, enemyDefense, new BasicAttack());
         return new Battle(hero, enemy, potions);
     }
 }
