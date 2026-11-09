@@ -25,6 +25,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /** Vista JavaFX che delega tutti i comandi di gioco a GameController. */
 public class MainGUI extends Application {
@@ -45,9 +47,7 @@ public class MainGUI extends Application {
     private final ProgressBar heroHpBar = new ProgressBar();
     private final ProgressBar enemyHpBar = new ProgressBar();
     private final TextArea battleLog = new TextArea();
-    private final Button attackButton = new Button("Attacca");
-    private final Button defendButton = new Button("Difenditi");
-    private final Button potionButton = new Button("Usa pozione");
+    private final Map<PlayerAction, Button> actionButtons = new LinkedHashMap<>();
     private final Button nextWaveButton = new Button("Prossima ondata");
 
     @Override
@@ -58,10 +58,15 @@ public class MainGUI extends Application {
         newGameButton.setOnAction(event -> startNewGame());
         saveButton.setOnAction(event -> saveGame());
         loadButton.setOnAction(event -> loadGame());
-        attackButton.setOnAction(event -> executeAction(PlayerAction.ATTACK));
-        defendButton.setOnAction(event -> executeAction(PlayerAction.DEFEND));
-        potionButton.setOnAction(event -> executeAction(PlayerAction.USE_POTION));
         nextWaveButton.setOnAction(event -> startNextWave());
+        HBox actions = new HBox(10);
+        for (PlayerAction action : controller.getPlayerActions()) {
+            Button button = new Button(action.getName());
+            button.setOnAction(event -> executeAction(action));
+            actionButtons.put(action, button);
+            actions.getChildren().add(button);
+        }
+        actions.getChildren().add(nextWaveButton);
 
         heroHpBar.setPrefWidth(260);
         enemyHpBar.setPrefWidth(260);
@@ -74,7 +79,6 @@ public class MainGUI extends Application {
         HBox combatants = new HBox(40, heroBox, enemyBox);
         combatants.setAlignment(Pos.CENTER);
 
-        HBox actions = new HBox(10, attackButton, defendButton, potionButton, nextWaveButton);
         actions.setAlignment(Pos.CENTER);
         HBox persistenceActions = new HBox(10, saveButton, loadButton);
         persistenceActions.setAlignment(Pos.CENTER);
@@ -150,15 +154,17 @@ public class MainGUI extends Application {
     private void appendTurn(TurnResult result) {
         GameSession session = controller.getSession();
         battleLog.appendText("\nTurno " + result.turnNumber() + ": ");
-        switch (result.playerAction()) {
-            case ATTACK -> appendAction(session.getHero().getName(), result.playerActionResult());
-            case DEFEND -> {
-                battleLog.appendText(session.getHero().getName() + " si difende e ");
-                appendActionResult(result.playerActionResult());
+        battleLog.appendText(session.getHero().getName() + " usa " + result.playerAction().getName());
+        if (result.playerActionResult() != null) {
+            battleLog.appendText(": infligge " + result.playerActionResult().damageDealt() + " danni");
+            if (result.playerActionResult().critical()) {
+                battleLog.appendText(" con un colpo critico");
             }
-            case USE_POTION -> battleLog.appendText(session.getHero().getName()
-                    + " recupera " + result.hpRestored() + " HP.");
         }
+        if (result.hpRestored() > 0) {
+            battleLog.appendText(": recupera " + result.hpRestored() + " HP");
+        }
+        battleLog.appendText(".");
         if (result.enemyActionResult() != null) {
             battleLog.appendText(" " + session.getCurrentBattle().getEnemy().getName() + " ");
             appendActionResult(result.enemyActionResult());
@@ -168,11 +174,6 @@ public class MainGUI extends Application {
         } else if (result.battleState().name().endsWith("LOST")) {
             battleLog.appendText(" L'eroe e' stato sconfitto.");
         }
-    }
-
-    private void appendAction(String actorName, ActionResult result) {
-        battleLog.appendText(actorName + " ");
-        appendActionResult(result);
     }
 
     private void appendActionResult(ActionResult result) {
@@ -194,10 +195,8 @@ public class MainGUI extends Application {
         updateCombatant(enemyLabel, enemyHpBar, enemy);
 
         boolean battleActive = session.getState() == GameState.IN_PROGRESS;
-        attackButton.setDisable(!battleActive);
-        defendButton.setDisable(!battleActive);
-        potionButton.setDisable(!battleActive || session.getRemainingPotions() == 0
-                || hero.getHp() == hero.getMaxHp());
+        actionButtons.forEach((action, button) ->
+                button.setDisable(!battleActive || !action.isAvailable(session.getCurrentBattle())));
         nextWaveButton.setDisable(session.getState() != GameState.WAVE_WON);
     }
 

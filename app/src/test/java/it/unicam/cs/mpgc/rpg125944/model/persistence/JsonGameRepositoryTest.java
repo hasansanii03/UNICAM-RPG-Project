@@ -3,7 +3,7 @@ package it.unicam.cs.mpgc.rpg125944.model.persistence;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
-import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.UsePotionAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class JsonGameRepositoryTest {
                 new Hero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
         );
         session.getHero().takeDamage(10);
-        session.executePlayerAction(PlayerAction.USE_POTION);
+        session.executePlayerAction(new UsePotionAction());
 
         repository.save(session);
         GameSession restored = repository.load(enemyProvider).orElseThrow();

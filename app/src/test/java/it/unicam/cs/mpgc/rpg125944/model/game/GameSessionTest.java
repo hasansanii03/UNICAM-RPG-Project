@@ -4,7 +4,8 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
-import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.AttackAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.DefendAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,7 @@ class GameSessionTest {
     void startsTheNextWaveOnlyAfterWinningTheCurrentOne() {
         GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 2, 1);
 
-        session.executePlayerAction(PlayerAction.ATTACK);
+        session.executePlayerAction(new AttackAction());
 
         assertEquals(GameState.WAVE_WON, session.getState());
         assertEquals(1, session.getCurrentWave());
@@ -35,7 +36,7 @@ class GameSessionTest {
     void winsTheGameAfterTheLastWave() {
         GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 1, 0);
 
-        session.executePlayerAction(PlayerAction.ATTACK);
+        session.executePlayerAction(new AttackAction());
 
         assertEquals(GameState.VICTORY, session.getState());
         assertThrows(IllegalStateException.class, session::startNextWave);
@@ -47,10 +48,10 @@ class GameSessionTest {
                 new Enemy("Enemy", 20, 20, 0, new BasicAttack());
         GameSession session = new GameSession(hero(10, 1), strongEnemyProvider, 1, 0);
 
-        session.executePlayerAction(PlayerAction.DEFEND);
+        session.executePlayerAction(new DefendAction());
 
         assertEquals(GameState.DEFEAT, session.getState());
-        assertThrows(IllegalStateException.class, () -> session.executePlayerAction(PlayerAction.ATTACK));
+        assertThrows(IllegalStateException.class, () -> session.executePlayerAction(new AttackAction()));
     }
 
     @Test
