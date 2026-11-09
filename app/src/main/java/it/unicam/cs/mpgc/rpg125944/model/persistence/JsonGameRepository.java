@@ -2,8 +2,9 @@ package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
 import it.unicam.cs.mpgc.rpg125944.model.combat.CriticalAttack;
@@ -82,8 +83,8 @@ public class JsonGameRepository implements GameRepository {
             throw new IllegalArgumentException("stato della partita mancante");
         }
         return GameSession.restore(
-                toCharacter(data.hero),
-                toCharacter(data.enemy),
+                toHero(data.hero),
+                toEnemy(data.enemy),
                 enemyProvider,
                 data.totalWaves,
                 data.currentWave,
@@ -111,17 +112,25 @@ public class JsonGameRepository implements GameRepository {
         return data;
     }
 
-    private Character toCharacter(CharacterSaveData data) {
+    private Hero toHero(CharacterSaveData data) {
+        validate(data);
+        return new Hero(data.name, data.maxHp, data.hp, data.attack, data.defense,
+                toAction(data.actionType, data.criticalChance));
+    }
+
+    private Enemy toEnemy(CharacterSaveData data) {
+        validate(data);
+        return new Enemy(data.name, data.maxHp, data.hp, data.attack, data.defense,
+                toAction(data.actionType, data.criticalChance));
+    }
+
+    private void validate(CharacterSaveData data) {
         if (data == null) {
             throw new IllegalArgumentException("dati del combattente mancanti");
         }
         if (data.name == null || data.actionType == null) {
             throw new IllegalArgumentException("dati del combattente incompleti");
         }
-        BaseHero character = new BaseHero(data.name, data.maxHp, data.attack, data.defense,
-                toAction(data.actionType, data.criticalChance));
-        character.setHpForLoading(data.hp);
-        return character;
     }
 
     private CombatAction toAction(String actionType, double criticalChance) {

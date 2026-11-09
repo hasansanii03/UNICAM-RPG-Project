@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.factories;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.CriticalAttack;
@@ -41,7 +41,7 @@ public class EnemyFactory implements EnemyProvider {
 
         switch (enemyType) {
             case 0:
-                return new BaseHero(
+                return new Enemy(
                     "Goblin Liv. " + difficultyLevel,
                     30 + hpMultiplier,
                     5 + attackMultiplier,
@@ -49,7 +49,7 @@ public class EnemyFactory implements EnemyProvider {
                     new BasicAttack()
                 );
             case 1:
-                return new BaseHero(
+                return new Enemy(
                     "Orco Liv. " + difficultyLevel,
                     50 + hpMultiplier,
                     10 + attackMultiplier,
@@ -58,7 +58,7 @@ public class EnemyFactory implements EnemyProvider {
                 );
             case 2:
                 // Un nemico debole ma molto resistente
-                return new BaseHero(
+                return new Enemy(
                     "Golem di Pietra Liv. " + difficultyLevel,
                     80 + hpMultiplier,
                     4 + attackMultiplier,

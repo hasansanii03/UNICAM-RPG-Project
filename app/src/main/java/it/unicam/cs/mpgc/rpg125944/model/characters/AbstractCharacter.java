@@ -7,8 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class BaseHero implements Character {
-    
+/**
+ * Parte comune a tutti i personaggi "veri" (non decorati): nome, punti vita,
+ * statistiche base, strategia di attacco e notifica agli osservatori.
+ * Le sottoclassi si distinguono per il ruolo che hanno nello scontro.
+ */
+public abstract class AbstractCharacter implements Character {
+
     private final String name;
     private int hp;
     private final int maxHp;
@@ -17,7 +22,15 @@ public class BaseHero implements Character {
     private final CombatAction combatAction;
     private final List<Observer> observers = new ArrayList<>();
 
-    public BaseHero(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
+    /** Crea un personaggio con tutti i punti vita. */
+    protected AbstractCharacter(String name, int maxHp, int baseAttack, int baseDefense, CombatAction combatAction) {
+        this(name, maxHp, maxHp, baseAttack, baseDefense, combatAction);
+    }
+
+    /** Crea un personaggio con i punti vita indicati (usato per ripristinare un salvataggio). */
+    protected AbstractCharacter(
+            String name, int maxHp, int hp, int baseAttack, int baseDefense, CombatAction combatAction
+    ) {
         this.name = Objects.requireNonNull(name, "il nome non puo' essere null");
         if (name.isBlank()) {
             throw new IllegalArgumentException("il nome non puo' essere vuoto");
@@ -25,18 +38,24 @@ public class BaseHero implements Character {
         if (maxHp <= 0) {
             throw new IllegalArgumentException("gli HP massimi devono essere positivi");
         }
+        if (hp < 0 || hp > maxHp) {
+            throw new IllegalArgumentException("gli HP devono essere compresi tra zero e gli HP massimi");
+        }
         if (baseAttack < 0 || baseDefense < 0) {
             throw new IllegalArgumentException("le statistiche di combattimento non possono essere negative");
         }
         this.maxHp = maxHp;
-        this.hp = maxHp;
+        this.hp = hp;
         this.baseAttack = baseAttack;
         this.baseDefense = baseDefense;
         this.combatAction = Objects.requireNonNull(combatAction, "combatAction non puo' essere null");
     }
 
+    /** Ruolo del personaggio nello scontro: ogni sottoclasse concreta lo dichiara. */
+    public abstract CharacterRole getRole();
+
     public void addObserver(Observer observer) {
-        this.observers.add(observer);
+        this.observers.add(Objects.requireNonNull(observer, "l'osservatore non puo' essere null"));
     }
 
     private void notifyObservers() {
@@ -75,11 +94,8 @@ public class BaseHero implements Character {
         if (damage < 0) {
             throw new IllegalArgumentException("il danno non puo' essere negativo");
         }
-        int actualDamage = Math.min(hp, Math.max(0, damage - this.getDefense()));
-        this.hp -= actualDamage;
-        if (this.hp < 0) {
-            this.hp = 0;
-        }
+        int actualDamage = Math.min(hp, Math.max(0, damage - getDefense()));
+        hp -= actualDamage;
         notifyObservers();
         return actualDamage;
     }
@@ -97,19 +113,11 @@ public class BaseHero implements Character {
 
     @Override
     public boolean isAlive() {
-        return this.hp > 0;
+        return hp > 0;
     }
 
     @Override
     public CombatAction getCombatAction() {
         return combatAction;
-    }
-    // Usato SOLO dal sistema di persistenza per ripristinare gli HP senza passare da takeDamage
-    public void setHpForLoading(int loadedHp) {
-        if (loadedHp < 0 || loadedHp > this.maxHp) {
-            throw new IllegalArgumentException("gli HP caricati devono essere compresi tra zero e gli HP massimi");
-        }
-        this.hp = loadedHp;
-        notifyObservers();
     }
 }

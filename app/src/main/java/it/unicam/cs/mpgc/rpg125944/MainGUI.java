@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944;
 
 import it.unicam.cs.mpgc.rpg125944.controller.GameController;
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.ActionResult;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
@@ -105,7 +105,7 @@ public class MainGUI extends Application {
     }
 
     private Character createHero() {
-        return new BaseHero("Arthur", 100, 18, 5, new BasicAttack());
+        return new Hero("Arthur", 100, 18, 5, new BasicAttack());
     }
 
     private void executeAction(PlayerAction action) {
