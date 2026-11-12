@@ -65,7 +65,7 @@ class JsonGameRepositoryTest {
     @Test
     void rejectsIncompleteJson() throws IOException {
         Path savePath = temporaryDirectory.resolve("incomplete.json");
-        Files.writeString(savePath, "{\"formatVersion\":1,\"gameState\":\"IN_PROGRESS\"}");
+        Files.writeString(savePath, "{\"formatVersion\":2,\"gameState\":\"IN_PROGRESS\"}");
         JsonGameRepository repository = new JsonGameRepository(savePath);
 
         assertThrows(PersistenceException.class, () -> repository.load(enemyProvider));

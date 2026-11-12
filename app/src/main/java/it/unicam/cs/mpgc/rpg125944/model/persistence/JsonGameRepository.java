@@ -1,13 +1,12 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
-import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
-import it.unicam.cs.mpgc.rpg125944.model.combat.CriticalAttack;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameState;
@@ -17,18 +16,27 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 /** Implementazione JSON del repository per partite complete. */
 public class JsonGameRepository implements GameRepository {
-    private static final int FORMAT_VERSION = 1;
+    private static final int FORMAT_VERSION = 2;
     private final Path savePath;
     private final Gson gson;
 
+    /** Crea un repository che sa salvare le azioni di combattimento di base. */
     public JsonGameRepository(Path savePath) {
+        this(savePath, List.of(new BasicAttackCodec(), new CriticalAttackCodec()));
+    }
+
+    /** Crea un repository che sa salvare le azioni descritte dai codec indicati. */
+    public JsonGameRepository(Path savePath, List<CombatActionCodec> actionCodecs) {
         this.savePath = Objects.requireNonNull(savePath, "savePath non puo' essere null");
-        this.gson = new Gson();
+        this.gson = new GsonBuilder()
+                .registerTypeHierarchyAdapter(CombatAction.class, new CombatActionAdapter(actionCodecs))
+                .create();
     }
 
     @Override
@@ -101,45 +109,28 @@ public class JsonGameRepository implements GameRepository {
         data.maxHp = character.getMaxHp();
         data.attack = character.getAttackPower();
         data.defense = character.getDefense();
-        if (character.getCombatAction() instanceof BasicAttack) {
-            data.actionType = "BASIC";
-        } else if (character.getCombatAction() instanceof CriticalAttack criticalAttack) {
-            data.actionType = "CRITICAL";
-            data.criticalChance = criticalAttack.getCriticalChance();
-        } else {
-            throw new IllegalArgumentException("azione di combattimento non supportata");
-        }
+        data.combatAction = character.getCombatAction();
         return data;
     }
 
     private Hero toHero(CharacterSaveData data) {
         validate(data);
         return new Hero(data.name, data.maxHp, data.hp, data.attack, data.defense,
-                toAction(data.actionType, data.criticalChance));
+                data.combatAction);
     }
 
     private Enemy toEnemy(CharacterSaveData data) {
         validate(data);
         return new Enemy(data.name, data.maxHp, data.hp, data.attack, data.defense,
-                toAction(data.actionType, data.criticalChance));
+                data.combatAction);
     }
 
     private void validate(CharacterSaveData data) {
         if (data == null) {
             throw new IllegalArgumentException("dati del combattente mancanti");
         }
-        if (data.name == null || data.actionType == null) {
+        if (data.name == null || data.combatAction == null) {
             throw new IllegalArgumentException("dati del combattente incompleti");
         }
-    }
-
-    private CombatAction toAction(String actionType, double criticalChance) {
-        if ("BASIC".equals(actionType)) {
-            return new BasicAttack();
-        }
-        if ("CRITICAL".equals(actionType)) {
-            return new CriticalAttack(criticalChance);
-        }
-        throw new IllegalArgumentException("tipo di azione non supportato");
     }
 }
