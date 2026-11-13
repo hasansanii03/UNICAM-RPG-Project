@@ -9,7 +9,9 @@ import it.unicam.cs.mpgc.rpg125944.model.combat.UsePotionAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import it.unicam.cs.mpgc.rpg125944.model.persistence.GameRepository;
+import it.unicam.cs.mpgc.rpg125944.util.Observer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,6 +22,7 @@ public class GameController {
     private final int availablePotions;
     private final GameRepository gameRepository;
     private final List<PlayerAction> playerActions;
+    private final List<Observer> observers = new ArrayList<>();
     private GameSession session;
 
     /** Crea un controller con le azioni di base: attacco, difesa e pozione. */
@@ -53,8 +56,13 @@ public class GameController {
         return playerActions;
     }
 
+    /** Registra chi vuole essere avvisato quando la partita cambia (anche se la sessione viene sostituita). */
+    public void addObserver(Observer observer) {
+        observers.add(Objects.requireNonNull(observer, "l'osservatore non puo' essere null"));
+    }
+
     public void startNewGame(Character hero) {
-        session = new GameSession(hero, enemyProvider, totalWaves, availablePotions);
+        useSession(new GameSession(hero, enemyProvider, totalWaves, availablePotions));
     }
 
     public TurnResult submitAction(PlayerAction action) {
@@ -70,8 +78,8 @@ public class GameController {
     }
 
     public void loadGame() {
-        session = gameRepository.load(enemyProvider)
-                .orElseThrow(() -> new IllegalStateException("nessuna partita salvata disponibile"));
+        useSession(gameRepository.load(enemyProvider)
+                .orElseThrow(() -> new IllegalStateException("nessuna partita salvata disponibile")));
     }
 
     public GameSession getSession() {
@@ -79,5 +87,17 @@ public class GameController {
             throw new IllegalStateException("avvia prima una nuova partita");
         }
         return session;
+    }
+
+    private void useSession(GameSession newSession) {
+        session = newSession;
+        session.addObserver(this::notifyObservers);
+        notifyObservers();
+    }
+
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 }

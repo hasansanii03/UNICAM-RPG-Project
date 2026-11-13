@@ -1,217 +1,51 @@
 package it.unicam.cs.mpgc.rpg125944;
 
 import it.unicam.cs.mpgc.rpg125944.controller.GameController;
-import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
-import it.unicam.cs.mpgc.rpg125944.model.combat.ActionResult;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
-import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
-import it.unicam.cs.mpgc.rpg125944.model.combat.TurnResult;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyFactory;
-import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
-import it.unicam.cs.mpgc.rpg125944.model.game.GameState;
 import it.unicam.cs.mpgc.rpg125944.model.persistence.JsonGameRepository;
-import it.unicam.cs.mpgc.rpg125944.model.persistence.PersistenceException;
+import it.unicam.cs.mpgc.rpg125944.view.BattleLogFormatter;
+import it.unicam.cs.mpgc.rpg125944.view.GameViewController;
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-/** Vista JavaFX che delega tutti i comandi di gioco a GameController. */
+/**
+ * Punto di ingresso e composition root: sceglie le implementazioni concrete
+ * (nemici, salvataggio, eroe) e le consegna alla vista. L'aspetto grafico sta in game.fxml.
+ */
 public class MainGUI extends Application {
     private static final int TOTAL_WAVES = 3;
     private static final int INITIAL_POTIONS = 2;
 
-    private final GameController controller = new GameController(
-            new EnemyFactory(),
-            TOTAL_WAVES,
-            INITIAL_POTIONS,
-            new JsonGameRepository(Path.of(System.getProperty("user.home"), ".unicam-rpg", "savegame.json"))
-    );
-
-    private final Label waveLabel = new Label();
-    private final Label stateLabel = new Label();
-    private final Label heroLabel = new Label();
-    private final Label enemyLabel = new Label();
-    private final ProgressBar heroHpBar = new ProgressBar();
-    private final ProgressBar enemyHpBar = new ProgressBar();
-    private final TextArea battleLog = new TextArea();
-    private final Map<PlayerAction, Button> actionButtons = new LinkedHashMap<>();
-    private final Button nextWaveButton = new Button("Prossima ondata");
-
     @Override
-    public void start(Stage stage) {
-        Button newGameButton = new Button("Nuova partita");
-        Button saveButton = new Button("Salva partita");
-        Button loadButton = new Button("Carica partita");
-        newGameButton.setOnAction(event -> startNewGame());
-        saveButton.setOnAction(event -> saveGame());
-        loadButton.setOnAction(event -> loadGame());
-        nextWaveButton.setOnAction(event -> startNextWave());
-        HBox actions = new HBox(10);
-        for (PlayerAction action : controller.getPlayerActions()) {
-            Button button = new Button(action.getName());
-            button.setOnAction(event -> executeAction(action));
-            actionButtons.put(action, button);
-            actions.getChildren().add(button);
-        }
-        actions.getChildren().add(nextWaveButton);
-
-        heroHpBar.setPrefWidth(260);
-        enemyHpBar.setPrefWidth(260);
-        battleLog.setEditable(false);
-        battleLog.setWrapText(true);
-        battleLog.setPrefRowCount(8);
-
-        VBox heroBox = new VBox(6, new Label("Eroe"), heroLabel, heroHpBar);
-        VBox enemyBox = new VBox(6, new Label("Nemico"), enemyLabel, enemyHpBar);
-        HBox combatants = new HBox(40, heroBox, enemyBox);
-        combatants.setAlignment(Pos.CENTER);
-
-        actions.setAlignment(Pos.CENTER);
-        HBox persistenceActions = new HBox(10, saveButton, loadButton);
-        persistenceActions.setAlignment(Pos.CENTER);
-        VBox root = new VBox(16,
-                new Label("UNICAM RPG Arena"),
-                waveLabel,
-                stateLabel,
-                combatants,
-                actions,
-                new Label("Registro dello scontro"),
-                battleLog,
-                persistenceActions,
-                newGameButton
+    public void start(Stage stage) throws IOException {
+        GameController gameController = new GameController(
+                new EnemyFactory(),
+                TOTAL_WAVES,
+                INITIAL_POTIONS,
+                new JsonGameRepository(Path.of(System.getProperty("user.home"), ".unicam-rpg", "savegame.json"))
         );
-        root.setPadding(new Insets(20));
-        root.setAlignment(Pos.CENTER);
 
-        startNewGame();
+        FXMLLoader loader = new FXMLLoader(MainGUI.class.getResource("view/game.fxml"));
+        loader.setControllerFactory(type ->
+                new GameViewController(gameController, MainGUI::createHero, new BattleLogFormatter()));
+        Parent root = loader.load();
+
         stage.setTitle("UNICAM RPG Arena");
-        stage.setScene(new Scene(root, 680, 500));
+        stage.setScene(new Scene(root));
         stage.show();
     }
 
-    private void startNewGame() {
-        controller.startNewGame(createHero());
-        battleLog.setText("Nuova partita iniziata. Scegli un'azione.");
-        refresh();
-    }
-
-    private Character createHero() {
+    private static Character createHero() {
         return new Hero("Arthur", 100, 18, 5, new BasicAttack());
-    }
-
-    private void executeAction(PlayerAction action) {
-        try {
-            TurnResult result = controller.submitAction(action);
-            appendTurn(result);
-            refresh();
-        } catch (IllegalStateException exception) {
-            battleLog.appendText("\nAzione non disponibile: " + exception.getMessage());
-        }
-    }
-
-    private void startNextWave() {
-        try {
-            controller.startNextWave();
-            battleLog.appendText("\nIniziata l'ondata " + controller.getSession().getCurrentWave() + ".");
-            refresh();
-        } catch (IllegalStateException exception) {
-            battleLog.appendText("\nProssima ondata non disponibile: " + exception.getMessage());
-        }
-    }
-
-    private void saveGame() {
-        try {
-            controller.saveGame();
-            battleLog.appendText("\nPartita salvata.");
-        } catch (PersistenceException exception) {
-            battleLog.appendText("\nSalvataggio fallito: " + exception.getMessage());
-        }
-    }
-
-    private void loadGame() {
-        try {
-            controller.loadGame();
-            battleLog.setText("Partita salvata caricata.");
-            refresh();
-        } catch (PersistenceException | IllegalStateException exception) {
-            battleLog.appendText("\nCaricamento fallito: " + exception.getMessage());
-        }
-    }
-
-    private void appendTurn(TurnResult result) {
-        GameSession session = controller.getSession();
-        battleLog.appendText("\nTurno " + result.turnNumber() + ": ");
-        battleLog.appendText(session.getHero().getName() + " usa " + result.playerAction().getName());
-        if (result.playerActionResult() != null) {
-            battleLog.appendText(": infligge " + result.playerActionResult().damageDealt() + " danni");
-            if (result.playerActionResult().critical()) {
-                battleLog.appendText(" con un colpo critico");
-            }
-        }
-        if (result.hpRestored() > 0) {
-            battleLog.appendText(": recupera " + result.hpRestored() + " HP");
-        }
-        battleLog.appendText(".");
-        if (result.enemyActionResult() != null) {
-            battleLog.appendText(" " + session.getCurrentBattle().getEnemy().getName() + " ");
-            appendActionResult(result.enemyActionResult());
-        }
-        if (result.battleState().name().endsWith("WON")) {
-            battleLog.appendText(" Il nemico e' stato sconfitto.");
-        } else if (result.battleState().name().endsWith("LOST")) {
-            battleLog.appendText(" L'eroe e' stato sconfitto.");
-        }
-    }
-
-    private void appendActionResult(ActionResult result) {
-        battleLog.appendText("infligge " + result.damageDealt() + " danni");
-        if (result.critical()) {
-            battleLog.appendText(" con un colpo critico");
-        }
-        battleLog.appendText(".");
-    }
-
-    private void refresh() {
-        GameSession session = controller.getSession();
-        Character hero = session.getHero();
-        Character enemy = session.getCurrentBattle().getEnemy();
-        waveLabel.setText("Ondata " + session.getCurrentWave() + " di " + session.getTotalWaves()
-                + " | Pozioni: " + session.getRemainingPotions());
-        stateLabel.setText("Stato: " + formatState(session.getState()));
-        updateCombatant(heroLabel, heroHpBar, hero);
-        updateCombatant(enemyLabel, enemyHpBar, enemy);
-
-        boolean battleActive = session.getState() == GameState.IN_PROGRESS;
-        actionButtons.forEach((action, button) ->
-                button.setDisable(!battleActive || !action.isAvailable(session.getCurrentBattle())));
-        nextWaveButton.setDisable(session.getState() != GameState.WAVE_WON);
-    }
-
-    private void updateCombatant(Label label, ProgressBar hpBar, Character character) {
-        label.setText(character.getName() + " - HP " + character.getHp() + "/" + character.getMaxHp());
-        hpBar.setProgress((double) character.getHp() / character.getMaxHp());
-    }
-
-    private String formatState(GameState state) {
-        return switch (state) {
-            case IN_PROGRESS -> "Scontro in corso";
-            case WAVE_WON -> "Ondata superata - continua quando vuoi";
-            case VICTORY -> "Vittoria";
-            case DEFEAT -> "Sconfitta";
-        };
     }
 
     public static void main(String[] args) {

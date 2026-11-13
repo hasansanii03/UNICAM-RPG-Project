@@ -11,6 +11,7 @@ import it.unicam.cs.mpgc.rpg125944.model.persistence.GameRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,6 +28,20 @@ class GameControllerTest {
         controller.submitAction(new AttackAction());
 
         assertEquals(GameState.VICTORY, controller.getSession().getState());
+    }
+
+    @Test
+    void notifiesObserversWhenTheGameChanges() {
+        EnemyProvider enemyProvider = wave -> new Enemy("Enemy", 50, 1, 0, new BasicAttack());
+        GameController controller = new GameController(enemyProvider, 1, 0, new InMemoryGameRepository());
+        AtomicInteger notifications = new AtomicInteger();
+        controller.addObserver(notifications::incrementAndGet);
+
+        controller.startNewGame(new Hero("Hero", 20, 10, 0, new BasicAttack()));
+        assertEquals(1, notifications.get());
+
+        controller.submitAction(new AttackAction());
+        assertEquals(2, notifications.get());
     }
 
     private static class InMemoryGameRepository implements GameRepository {

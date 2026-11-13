@@ -7,10 +7,15 @@ import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
 import it.unicam.cs.mpgc.rpg125944.model.combat.TurnResult;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 
+import it.unicam.cs.mpgc.rpg125944.util.Observer;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-/** Possiede lo stato e le transizioni valide di una partita. */
+/** Possiede lo stato e le transizioni valide di una partita e avvisa gli osservatori quando cambia. */
 public class GameSession {
+    private final List<Observer> observers = new ArrayList<>();
     private final Character hero;
     private final EnemyProvider enemyProvider;
     private final int totalWaves;
@@ -81,7 +86,12 @@ public class GameSession {
         } else if (result.battleState() == BattleState.HERO_WON) {
             state = currentWave == totalWaves ? GameState.VICTORY : GameState.WAVE_WON;
         }
+        notifyObservers();
         return result;
+    }
+
+    public void addObserver(Observer observer) {
+        observers.add(Objects.requireNonNull(observer, "l'osservatore non puo' essere null"));
     }
 
     public void startNextWave() {
@@ -91,6 +101,7 @@ public class GameSession {
         currentWave++;
         state = GameState.IN_PROGRESS;
         createBattle();
+        notifyObservers();
     }
 
     public Character getHero() {
@@ -115,6 +126,12 @@ public class GameSession {
 
     public GameState getState() {
         return state;
+    }
+
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
     }
 
     private void createBattle() {

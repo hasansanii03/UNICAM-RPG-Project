@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="16" prefWidth="680" prefHeight="500"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="it.unicam.cs.mpgc.rpg125944.view.GameViewController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="UNICAM RPG Arena"/>
+    <Label fx:id="waveLabel"/>
+    <Label fx:id="stateLabel"/>
+
+    <HBox alignment="CENTER" spacing="40">
+        <VBox spacing="6">
+            <Label text="Eroe"/>
+            <Label fx:id="heroLabel"/>
+            <ProgressBar fx:id="heroHpBar" prefWidth="260"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="Nemico"/>
+            <Label fx:id="enemyLabel"/>
+            <ProgressBar fx:id="enemyHpBar" prefWidth="260"/>
+        </VBox>
+    </HBox>
+
+    <!-- I pulsanti delle azioni vengono aggiunti dal controller, uno per ogni PlayerAction. -->
+    <HBox fx:id="actionBox" alignment="CENTER" spacing="10"/>
+    <Button fx:id="nextWaveButton" text="Prossima ondata" onAction="#onNextWave"/>
+
+    <Label text="Registro dello scontro"/>
+    <TextArea fx:id="battleLog" editable="false" wrapText="true" prefRowCount="8"/>
+
+    <HBox alignment="CENTER" spacing="10">
+        <Button text="Salva partita" onAction="#onSave"/>
+        <Button text="Carica partita" onAction="#onLoad"/>
+    </HBox>
+    <Button text="Nuova partita" onAction="#onNewGame"/>
+</VBox>
