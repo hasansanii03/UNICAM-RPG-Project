@@ -20,13 +20,12 @@ public class GameSession {
     private final EnemyProvider enemyProvider;
     private final int totalWaves;
     private int currentWave;
-    private int remainingPotions;
     private Battle currentBattle;
     private GameState state;
 
     public GameSession(Character hero, EnemyProvider enemyProvider, int totalWaves, int availablePotions) {
         this(hero, enemyProvider, totalWaves, availablePotions, 1, GameState.IN_PROGRESS);
-        createBattle();
+        createBattle(availablePotions);
         synchronizeStateWithBattle();
     }
 
@@ -50,7 +49,6 @@ public class GameSession {
             throw new IllegalArgumentException("l'ondata corrente deve essere compresa nel range della partita");
         }
         this.totalWaves = totalWaves;
-        this.remainingPotions = remainingPotions;
         this.currentWave = currentWave;
         this.state = Objects.requireNonNull(state, "lo stato non puo' essere null");
     }
@@ -80,7 +78,6 @@ public class GameSession {
         }
 
         TurnResult result = currentBattle.executeTurn(action);
-        remainingPotions = result.remainingPotions();
         if (result.battleState() == BattleState.HERO_LOST) {
             state = GameState.DEFEAT;
         } else if (result.battleState() == BattleState.HERO_WON) {
@@ -100,7 +97,7 @@ public class GameSession {
         }
         currentWave++;
         state = GameState.IN_PROGRESS;
-        createBattle();
+        createBattle(currentBattle.getRemainingPotions());
         notifyObservers();
     }
 
@@ -121,7 +118,7 @@ public class GameSession {
     }
 
     public int getRemainingPotions() {
-        return remainingPotions;
+        return currentBattle.getRemainingPotions();
     }
 
     public GameState getState() {
@@ -134,8 +131,9 @@ public class GameSession {
         }
     }
 
-    private void createBattle() {
-        currentBattle = new Battle(hero, enemyProvider.createEnemy(currentWave), remainingPotions);
+    /** Le pozioni vivono solo nello scontro corrente: la nuova ondata riparte da quelle rimaste. */
+    private void createBattle(int potions) {
+        currentBattle = new Battle(hero, enemyProvider.createEnemy(currentWave), potions);
     }
 
     private void validateRestoredState() {

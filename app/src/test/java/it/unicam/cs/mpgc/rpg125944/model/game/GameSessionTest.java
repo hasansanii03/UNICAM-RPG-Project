@@ -6,6 +6,7 @@ import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.combat.AttackAction;
 import it.unicam.cs.mpgc.rpg125944.model.combat.DefendAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.UsePotionAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import org.junit.jupiter.api.Test;
 
@@ -74,6 +75,32 @@ class GameSessionTest {
         GameSession.restore(hero, enemy, provider, 2, 1, 0, 1, GameState.IN_PROGRESS);
 
         assertEquals(0, generatedEnemies.get());
+    }
+
+    @Test
+    void potionsUsedInOneWaveCarryOverToTheNext() {
+        EnemyProvider provider = wave -> new Enemy("Enemy " + wave, 60, 10, 0, new BasicAttack());
+        GameSession session = new GameSession(hero(100, 40), provider, 2, 2);
+        session.executePlayerAction(new AttackAction());
+        session.executePlayerAction(new UsePotionAction());
+        assertEquals(1, session.getRemainingPotions());
+
+        session.executePlayerAction(new AttackAction());
+        session.startNextWave();
+
+        assertEquals(1, session.getRemainingPotions());
+    }
+
+    @Test
+    void notifiesObserversAfterEveryChange() {
+        GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 2, 0);
+        AtomicInteger notifications = new AtomicInteger();
+        session.addObserver(notifications::incrementAndGet);
+
+        session.executePlayerAction(new AttackAction());
+        session.startNextWave();
+
+        assertEquals(2, notifications.get());
     }
 
     private Character hero(int hp, int attack) {
