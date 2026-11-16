@@ -1,10 +1,8 @@
 package it.unicam.cs.mpgc.rpg125944;
 
 import it.unicam.cs.mpgc.rpg125944.controller.GameController;
-import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
-import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
-import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyFactory;
+import it.unicam.cs.mpgc.rpg125944.model.factories.HeroCatalog;
 import it.unicam.cs.mpgc.rpg125944.model.persistence.JsonGameRepository;
 import it.unicam.cs.mpgc.rpg125944.view.BattleLogFormatter;
 import it.unicam.cs.mpgc.rpg125944.view.GameViewController;
@@ -36,7 +34,7 @@ public class MainGUI extends Application {
 
         FXMLLoader loader = new FXMLLoader(MainGUI.class.getResource("view/game.fxml"));
         loader.setControllerFactory(type ->
-                new GameViewController(gameController, MainGUI::createHero, new BattleLogFormatter()));
+                new GameViewController(gameController, HeroCatalog.standard(), new BattleLogFormatter()));
         Parent root = loader.load();
 
         stage.setTitle("UNICAM RPG Arena");
@@ -44,9 +42,6 @@ public class MainGUI extends Application {
         stage.show();
     }
 
-    private static Character createHero() {
-        return new Hero("Arthur", 100, 18, 5, new BasicAttack());
-    }
 
     public static void main(String[] args) {
         launch(args);

@@ -4,12 +4,15 @@ import it.unicam.cs.mpgc.rpg125944.controller.GameController;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
 import it.unicam.cs.mpgc.rpg125944.model.combat.TurnResult;
+import it.unicam.cs.mpgc.rpg125944.model.factories.HeroCatalog;
+import it.unicam.cs.mpgc.rpg125944.model.factories.HeroClass;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameState;
 import it.unicam.cs.mpgc.rpg125944.model.persistence.PersistenceException;
 import it.unicam.cs.mpgc.rpg125944.util.Observer;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
@@ -18,7 +21,7 @@ import javafx.scene.layout.HBox;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
+
 
 /**
  * Controller della vista definita in game.fxml. Inoltra i comandi a {@link GameController}
@@ -26,7 +29,7 @@ import java.util.function.Supplier;
  */
 public class GameViewController implements Observer {
     private final GameController gameController;
-    private final Supplier<Character> heroSupplier;
+    private final HeroCatalog heroCatalog;
     private final BattleLogFormatter formatter;
     private final Map<PlayerAction, Button> actionButtons = new LinkedHashMap<>();
 
@@ -38,13 +41,14 @@ public class GameViewController implements Observer {
     @FXML private ProgressBar enemyHpBar;
     @FXML private TextArea battleLog;
     @FXML private HBox actionBox;
+    @FXML private ChoiceBox<HeroClass> heroChoice;
     @FXML private Button nextWaveButton;
 
     public GameViewController(
-            GameController gameController, Supplier<Character> heroSupplier, BattleLogFormatter formatter
+            GameController gameController, HeroCatalog heroCatalog, BattleLogFormatter formatter
     ) {
         this.gameController = Objects.requireNonNull(gameController, "gameController non puo' essere null");
-        this.heroSupplier = Objects.requireNonNull(heroSupplier, "heroSupplier non puo' essere null");
+        this.heroCatalog = Objects.requireNonNull(heroCatalog, "heroCatalog non puo' essere null");
         this.formatter = Objects.requireNonNull(formatter, "formatter non puo' essere null");
     }
 
@@ -57,13 +61,15 @@ public class GameViewController implements Observer {
             actionButtons.put(action, button);
             actionBox.getChildren().add(button);
         }
+        heroChoice.getItems().addAll(heroCatalog.getClassesByToughness());
+        heroChoice.getSelectionModel().selectFirst();
         gameController.addObserver(this);
         onNewGame();
     }
 
     @FXML
     private void onNewGame() {
-        gameController.startNewGame(heroSupplier.get());
+        gameController.startNewGame(heroChoice.getValue().createHero());
         battleLog.setText("Nuova partita iniziata. Scegli un'azione.");
     }
 
