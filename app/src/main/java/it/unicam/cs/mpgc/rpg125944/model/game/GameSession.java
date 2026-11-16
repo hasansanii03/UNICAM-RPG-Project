@@ -7,21 +7,25 @@ import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
 import it.unicam.cs.mpgc.rpg125944.model.combat.TurnResult;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 
+import it.unicam.cs.mpgc.rpg125944.util.Observer;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-/** Possiede lo stato e le transizioni valide di una partita. */
+/** Possiede lo stato e le transizioni valide di una partita e avvisa gli osservatori quando cambia. */
 public class GameSession {
+    private final List<Observer> observers = new ArrayList<>();
     private final Character hero;
     private final EnemyProvider enemyProvider;
     private final int totalWaves;
     private int currentWave;
-    private int remainingPotions;
     private Battle currentBattle;
     private GameState state;
 
     public GameSession(Character hero, EnemyProvider enemyProvider, int totalWaves, int availablePotions) {
         this(hero, enemyProvider, totalWaves, availablePotions, 1, GameState.IN_PROGRESS);
-        createBattle();
+        createBattle(availablePotions);
         synchronizeStateWithBattle();
     }
 
@@ -45,7 +49,6 @@ public class GameSession {
             throw new IllegalArgumentException("l'ondata corrente deve essere compresa nel range della partita");
         }
         this.totalWaves = totalWaves;
-        this.remainingPotions = remainingPotions;
         this.currentWave = currentWave;
         this.state = Objects.requireNonNull(state, "lo stato non puo' essere null");
     }
@@ -75,13 +78,17 @@ public class GameSession {
         }
 
         TurnResult result = currentBattle.executeTurn(action);
-        remainingPotions = result.remainingPotions();
         if (result.battleState() == BattleState.HERO_LOST) {
             state = GameState.DEFEAT;
         } else if (result.battleState() == BattleState.HERO_WON) {
             state = currentWave == totalWaves ? GameState.VICTORY : GameState.WAVE_WON;
         }
+        notifyObservers();
         return result;
+    }
+
+    public void addObserver(Observer observer) {
+        observers.add(Objects.requireNonNull(observer, "l'osservatore non puo' essere null"));
     }
 
     public void startNextWave() {
@@ -90,7 +97,8 @@ public class GameSession {
         }
         currentWave++;
         state = GameState.IN_PROGRESS;
-        createBattle();
+        createBattle(currentBattle.getRemainingPotions());
+        notifyObservers();
     }
 
     public Character getHero() {
@@ -110,15 +118,22 @@ public class GameSession {
     }
 
     public int getRemainingPotions() {
-        return remainingPotions;
+        return currentBattle.getRemainingPotions();
     }
 
     public GameState getState() {
         return state;
     }
 
-    private void createBattle() {
-        currentBattle = new Battle(hero, enemyProvider.createEnemy(currentWave), remainingPotions);
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update();
+        }
+    }
+
+    /** Le pozioni vivono solo nello scontro corrente: la nuova ondata riparte da quelle rimaste. */
+    private void createBattle(int potions) {
+        currentBattle = new Battle(hero, enemyProvider.createEnemy(currentWave), potions);
     }
 
     private void validateRestoredState() {

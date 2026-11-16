@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
+import it.unicam.cs.mpgc.rpg125944.model.combat.CombatAction;
+
 /** Rappresentazione grezza serializzabile di un combattente. */
 public class CharacterSaveData {
     public String name;
@@ -7,6 +9,6 @@ public class CharacterSaveData {
     public int maxHp;
     public int attack;
     public int defense;
-    public String actionType;
-    public double criticalChance;
+    /** Scritta e letta da {@link CombatActionAdapter}. */
+    public CombatAction combatAction;
 }

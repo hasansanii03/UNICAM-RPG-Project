@@ -1,8 +1,9 @@
 package it.unicam.cs.mpgc.rpg125944.model.persistence;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
-import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.UsePotionAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import it.unicam.cs.mpgc.rpg125944.model.game.GameSession;
 import org.junit.jupiter.api.Test;
@@ -22,17 +23,17 @@ class JsonGameRepositoryTest {
     Path temporaryDirectory;
 
     private final EnemyProvider enemyProvider = wave ->
-            new BaseHero("Enemy " + wave, 30, 5, 0, new BasicAttack());
+            new Enemy("Enemy " + wave, 30, 5, 0, new BasicAttack());
 
     @Test
     void savesAndRestoresTheCompleteActiveSession() {
         Path savePath = temporaryDirectory.resolve("savegame.json");
         JsonGameRepository repository = new JsonGameRepository(savePath);
         GameSession session = new GameSession(
-                new BaseHero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
+                new Hero("Hero", 50, 10, 2, new BasicAttack()), enemyProvider, 3, 2
         );
         session.getHero().takeDamage(10);
-        session.executePlayerAction(PlayerAction.USE_POTION);
+        session.executePlayerAction(new UsePotionAction());
 
         repository.save(session);
         GameSession restored = repository.load(enemyProvider).orElseThrow();
@@ -64,7 +65,7 @@ class JsonGameRepositoryTest {
     @Test
     void rejectsIncompleteJson() throws IOException {
         Path savePath = temporaryDirectory.resolve("incomplete.json");
-        Files.writeString(savePath, "{\"formatVersion\":1,\"gameState\":\"IN_PROGRESS\"}");
+        Files.writeString(savePath, "{\"formatVersion\":2,\"gameState\":\"IN_PROGRESS\"}");
         JsonGameRepository repository = new JsonGameRepository(savePath);
 
         assertThrows(PersistenceException.class, () -> repository.load(enemyProvider));
@@ -75,7 +76,7 @@ class JsonGameRepositoryTest {
         Path savePath = temporaryDirectory.resolve("nested").resolve("savegame.json");
         JsonGameRepository repository = new JsonGameRepository(savePath);
         GameSession session = new GameSession(
-                new BaseHero("Hero", 20, 10, 0, new BasicAttack()), enemyProvider, 1, 0
+                new Hero("Hero", 20, 10, 0, new BasicAttack()), enemyProvider, 1, 0
         );
 
         repository.save(session);

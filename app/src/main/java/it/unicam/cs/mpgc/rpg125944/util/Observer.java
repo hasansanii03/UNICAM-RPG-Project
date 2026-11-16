@@ -2,9 +2,11 @@ package it.unicam.cs.mpgc.rpg125944.util;
 
 /**
  * Interfaccia base per il pattern Observer.
- * Chiunque voglia "ascoltare" i cambiamenti (es. la GUI) deve implementare questa interfaccia.
+ * Chi vuole essere avvisato dei cambiamenti del model (es. la vista) la implementa
+ * e si registra presso il soggetto osservato.
  */
+@FunctionalInterface
 public interface Observer {
-    // Metodo chiamato quando i dati cambiano
+    /** Chiamato dal soggetto osservato dopo ogni cambiamento del suo stato. */
     void update();
 }

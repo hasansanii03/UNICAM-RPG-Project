@@ -1,9 +1,12 @@
 package it.unicam.cs.mpgc.rpg125944.model.game;
 
-import it.unicam.cs.mpgc.rpg125944.model.characters.BaseHero;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Enemy;
+import it.unicam.cs.mpgc.rpg125944.model.characters.Hero;
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
 import it.unicam.cs.mpgc.rpg125944.model.combat.BasicAttack;
-import it.unicam.cs.mpgc.rpg125944.model.combat.PlayerAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.AttackAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.DefendAction;
+import it.unicam.cs.mpgc.rpg125944.model.combat.UsePotionAction;
 import it.unicam.cs.mpgc.rpg125944.model.factories.EnemyProvider;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class GameSessionTest {
     private final EnemyProvider weakEnemyProvider = wave ->
-            new BaseHero("Enemy " + wave, 5, 1, 0, new BasicAttack());
+            new Enemy("Enemy " + wave, 5, 1, 0, new BasicAttack());
 
     @Test
     void startsTheNextWaveOnlyAfterWinningTheCurrentOne() {
         GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 2, 1);
 
-        session.executePlayerAction(PlayerAction.ATTACK);
+        session.executePlayerAction(new AttackAction());
 
         assertEquals(GameState.WAVE_WON, session.getState());
         assertEquals(1, session.getCurrentWave());
@@ -34,7 +37,7 @@ class GameSessionTest {
     void winsTheGameAfterTheLastWave() {
         GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 1, 0);
 
-        session.executePlayerAction(PlayerAction.ATTACK);
+        session.executePlayerAction(new AttackAction());
 
         assertEquals(GameState.VICTORY, session.getState());
         assertThrows(IllegalStateException.class, session::startNextWave);
@@ -43,13 +46,13 @@ class GameSessionTest {
     @Test
     void recordsDefeatWhenTheHeroIsDefeated() {
         EnemyProvider strongEnemyProvider = wave ->
-                new BaseHero("Enemy", 20, 20, 0, new BasicAttack());
+                new Enemy("Enemy", 20, 20, 0, new BasicAttack());
         GameSession session = new GameSession(hero(10, 1), strongEnemyProvider, 1, 0);
 
-        session.executePlayerAction(PlayerAction.DEFEND);
+        session.executePlayerAction(new DefendAction());
 
         assertEquals(GameState.DEFEAT, session.getState());
-        assertThrows(IllegalStateException.class, () -> session.executePlayerAction(PlayerAction.ATTACK));
+        assertThrows(IllegalStateException.class, () -> session.executePlayerAction(new AttackAction()));
     }
 
     @Test
@@ -64,17 +67,43 @@ class GameSessionTest {
         AtomicInteger generatedEnemies = new AtomicInteger();
         EnemyProvider provider = wave -> {
             generatedEnemies.incrementAndGet();
-            return new BaseHero("Generated", 10, 1, 0, new BasicAttack());
+            return new Enemy("Generated", 10, 1, 0, new BasicAttack());
         };
         Character hero = hero(20, 10);
-        Character enemy = new BaseHero("Saved enemy", 10, 1, 0, new BasicAttack());
+        Character enemy = new Enemy("Saved enemy", 10, 1, 0, new BasicAttack());
 
         GameSession.restore(hero, enemy, provider, 2, 1, 0, 1, GameState.IN_PROGRESS);
 
         assertEquals(0, generatedEnemies.get());
     }
 
+    @Test
+    void potionsUsedInOneWaveCarryOverToTheNext() {
+        EnemyProvider provider = wave -> new Enemy("Enemy " + wave, 60, 10, 0, new BasicAttack());
+        GameSession session = new GameSession(hero(100, 40), provider, 2, 2);
+        session.executePlayerAction(new AttackAction());
+        session.executePlayerAction(new UsePotionAction());
+        assertEquals(1, session.getRemainingPotions());
+
+        session.executePlayerAction(new AttackAction());
+        session.startNextWave();
+
+        assertEquals(1, session.getRemainingPotions());
+    }
+
+    @Test
+    void notifiesObserversAfterEveryChange() {
+        GameSession session = new GameSession(hero(20, 10), weakEnemyProvider, 2, 0);
+        AtomicInteger notifications = new AtomicInteger();
+        session.addObserver(notifications::incrementAndGet);
+
+        session.executePlayerAction(new AttackAction());
+        session.startNextWave();
+
+        assertEquals(2, notifications.get());
+    }
+
     private Character hero(int hp, int attack) {
-        return new BaseHero("Hero", hp, attack, 0, new BasicAttack());
+        return new Hero("Hero", hp, attack, 0, new BasicAttack());
     }
 }

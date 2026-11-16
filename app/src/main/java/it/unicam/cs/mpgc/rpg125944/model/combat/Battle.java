@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg125944.model.combat;
 
 import it.unicam.cs.mpgc.rpg125944.model.characters.Character;
-import it.unicam.cs.mpgc.rpg125944.model.characters.CharacterDecorator;
 
 import java.util.Objects;
 
@@ -11,7 +10,6 @@ import java.util.Objects;
  */
 public class Battle {
     public static final int POTION_HEALING = 20;
-    private static final int COUNTERATTACK_DIVISOR = 2;
 
     private final Character hero;
     private final Character enemy;
@@ -42,32 +40,16 @@ public class Battle {
         if (state != BattleState.IN_PROGRESS) {
             throw new IllegalStateException("lo scontro e' gia' terminato");
         }
-
-        ActionResult playerActionResult = null;
-        int hpRestored = 0;
-        boolean defending = playerAction == PlayerAction.DEFEND;
-
-        if (playerAction == PlayerAction.ATTACK) {
-            playerActionResult = hero.getCombatAction().execute(hero, enemy);
-        } else if (playerAction == PlayerAction.DEFEND) {
-            int rawDamage = (hero.getAttackPower() + 1) / COUNTERATTACK_DIVISOR;
-            int damageDealt = enemy.takeDamage(rawDamage);
-            playerActionResult = new ActionResult(rawDamage, damageDealt, false);
-        } else if (playerAction == PlayerAction.USE_POTION) {
-            if (remainingPotions == 0) {
-                throw new IllegalStateException("non restano pozioni");
-            }
-            if (hero.getHp() == hero.getMaxHp()) {
-                throw new IllegalStateException("l'eroe ha gia' tutti gli HP");
-            }
-            remainingPotions--;
-            hpRestored = hero.heal(POTION_HEALING);
+        if (!playerAction.isAvailable(this)) {
+            throw new IllegalStateException("azione non disponibile: " + playerAction.getName());
         }
+
+        ActionOutcome outcome = playerAction.execute(this);
 
         updateState();
         ActionResult enemyActionResult = null;
         if (state == BattleState.IN_PROGRESS) {
-            Character target = defending ? new GuardedCharacter(hero) : hero;
+            Character target = playerAction.protect(hero);
             enemyActionResult = enemy.getCombatAction().execute(enemy, target);
             updateState();
         }
@@ -75,14 +57,26 @@ public class Battle {
         TurnResult result = new TurnResult(
                 turnNumber,
                 playerAction,
-                playerActionResult,
+                outcome.damageResult(),
                 enemyActionResult,
-                hpRestored,
+                outcome.hpRestored(),
                 remainingPotions,
                 state
         );
         turnNumber++;
         return result;
+    }
+
+    /**
+     * Consuma una pozione e cura l'eroe. Pensato per essere chiamato dalle azioni del giocatore
+     * (dopo aver verificato la disponibilita'). Restituisce i punti vita recuperati.
+     */
+    public int consumePotion() {
+        if (remainingPotions == 0) {
+            throw new IllegalStateException("non restano pozioni");
+        }
+        remainingPotions--;
+        return hero.heal(POTION_HEALING);
     }
 
     public Character getHero() {
@@ -112,24 +106,6 @@ public class Battle {
             state = BattleState.HERO_WON;
         } else {
             state = BattleState.IN_PROGRESS;
-        }
-    }
-
-    /**
-     * Decorator usato solo durante la difesa: dimezza il danno in ingresso
-     * (arrotondando per eccesso) e delega tutto il resto al personaggio originale.
-     */
-    private static class GuardedCharacter extends CharacterDecorator {
-        private static final int GUARD_DAMAGE_DIVISOR = 2;
-
-        private GuardedCharacter(Character character) {
-            super(character);
-        }
-
-        @Override
-        public int takeDamage(int damage) {
-            int reducedDamage = (damage + GUARD_DAMAGE_DIVISOR - 1) / GUARD_DAMAGE_DIVISOR;
-            return character.takeDamage(reducedDamage);
         }
     }
 }
